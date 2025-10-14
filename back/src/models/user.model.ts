@@ -32,6 +32,12 @@ const userSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    compras: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   {
     timestamps: true,

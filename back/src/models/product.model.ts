@@ -1,36 +1,35 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+import { Schema, model } from "mongoose";
 
 const productSchema = new Schema(
   {
-    nome: {
+    name: {
       type: String,
       required: [true, "O nome do produto é obrigatório."],
       trim: true,
     },
-    preco: {
+    price: {
       type: Number,
       required: [true, "O preço do produto é obrigatório."],
       min: [0, "O preço não pode ser negativo."],
     },
-    descricao: {
+    description: {
       type: String,
       required: [true, "A descrição do produto é obrigatória."],
     },
-    dataPublicacao: {
+    dateCreated: {
       type: Date,
       default: Date.now,
     },
-    urlImagem: {
+    urlImage: {
       type: String,
       required: [true, "A URL da imagem é obrigatória."],
     },
-    vendedor: {
+    vendor: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    isAtivo: {
+    isActive: {
       type: Boolean,
       default: true,
     },
@@ -41,5 +40,5 @@ const productSchema = new Schema(
   },
 );
 
-const Product = mongoose.model("Product", productSchema);
-module.exports = Product;
+const Product = model("Product", productSchema);
+export default Product;
