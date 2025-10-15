@@ -20,7 +20,6 @@ export const createUser = async (req: Request, res: Response) => {
 
     res.status(201).json(userResponse);
   } catch (error: Error | any) {
-    console.log(error);
     if (error.name === "ValidationError") {
       const errors: Record<string, string> = {};
       for (const field in error.errors) {
@@ -79,7 +78,14 @@ export const updateUser = async (req: Request, res: Response) => {
     }
 
     res.status(200).json(updatedUser);
-  } catch (error) {
+  } catch (error: Error | any) {
+    if (error.name === "ValidationError") {
+      const errors: Record<string, string> = {};
+      for (const field in error.errors) {
+        errors[field] = error.errors[field].message;
+      }
+      return res.status(400).json({ message: "Erro de validação.", errors });
+    }
     const message =
       error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
     res
