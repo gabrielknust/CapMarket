@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import Product from "../models/product.model.ts";
-import User from "../models/user.model.ts";
+import Product from "../models/product.model";
+import User from "../models/user.model";
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
