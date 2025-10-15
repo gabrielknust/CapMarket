@@ -4,7 +4,7 @@ import User from "../models/user.model";
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { name, price, description, imageUrl, seller } = req.body;
+    const { name, price, description, urlImage, seller } = req.body;
 
     const sellerExists = await User.findById(seller);
     if (!sellerExists || sellerExists.role !== "Vendedor") {
@@ -17,7 +17,7 @@ export const createProduct = async (req: Request, res: Response) => {
       name,
       price,
       description,
-      imageUrl,
+      urlImage,
       seller,
     });
     const savedProduct = await newProduct.save();
@@ -74,6 +74,32 @@ export const getProductById = async (req: Request, res: Response) => {
   }
 };
 
+export const getProductsBySeller = async (req: Request, res: Response) => {
+  try {
+    const { sellerId } = req.params;
+
+    const sellerExists = await User.findById(sellerId);
+    if (!sellerExists || sellerExists.role !== "Vendedor") {
+      return res
+        .status(400)
+        .json({ message: "Vendedor inválido ou não encontrado." });
+    }
+
+    const products = await Product.find({
+      seller: sellerId,
+      isActive: true,
+    }).populate("seller", "name email");
+
+    res.status(200).json(products);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+    res
+      .status(500)
+      .json({ message: "Erro ao buscar produtos do vendedor", error: message });
+  }
+};
+
 export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -87,7 +113,14 @@ export const updateProduct = async (req: Request, res: Response) => {
     }
 
     res.status(200).json(updatedProduct);
-  } catch (error) {
+  } catch (error: Error | any) {
+    if (error.name === "ValidationError") {
+      const errors: Record<string, string> = {};
+      for (const field in error.errors) {
+        errors[field] = error.errors[field].message;
+      }
+      return res.status(400).json({ message: "Erro de validação.", errors });
+    }
     const message =
       error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
     res
@@ -101,7 +134,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
     const { id } = req.params;
     const deactivatedProduct = await Product.findByIdAndUpdate(
       id,
-      { isAtivo: false },
+      { isActive: false },
       { new: true },
     );
 
