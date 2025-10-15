@@ -6,7 +6,7 @@ import {
   getUserById,
   updateUser,
   deleteUser,
-} from "../controllers/user.controller.ts";
+} from "../controllers/user.controller";
 
 const router = Router();
 

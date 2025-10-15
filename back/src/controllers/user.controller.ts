@@ -1,32 +1,40 @@
 import type { Request, Response } from "express";
-import User from "../models/user.model.ts";
+import User from "../models/user.model";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { nome, email, senha, papel } = req.body;
+    const { name, email, password, role } = req.body;
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "Este email já está em uso." });
     }
 
-    const newUser = new User({ nome, email, senha, papel });
+    const newUser = new User({ name, email, password, role });
     await newUser.save();
     const userResponse = {
       _id: newUser._id,
-      nome: newUser.nome,
+      name: newUser.name,
       email: newUser.email,
-      papel: newUser.papel,
+      role: newUser.role,
     };
 
     res.status(201).json(userResponse);
-  } catch (error) {
+  } catch (error: Error | any) {
+    console.log(error);
+    if (error.name === "ValidationError") {
+      const errors: Record<string, string> = {};
+      for (const field in error.errors) {
+        errors[field] = error.errors[field].message;
+      }
+      return res.status(400).json({ message: "Erro de validação.", errors });
+    }
     const message =
       error instanceof Error ? error.message : "Erro desconhecido.";
     res.status(500).json({ message: "Erro ao criar usuário", error: message });
   }
 };
 
-export const getAllUsers = async (res: Response) => {
+export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find();
     res.status(200).json(users);
@@ -60,7 +68,6 @@ export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updates = req.body;
-    if (updates.senha) delete updates.senha;
 
     const updatedUser = await User.findByIdAndUpdate(id, updates, {
       new: true,
@@ -84,7 +91,7 @@ export const updateUser = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const deletedUser = await User.findByIdAndDelete(id);
+    const deletedUser = await User.findByIdAndUpdate(id, { isActive: false });
 
     if (!deletedUser) {
       return res.status(404).json({ message: "Usuário não encontrado." });
