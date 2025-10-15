@@ -24,7 +24,7 @@ const productSchema = new Schema(
       type: String,
       required: [true, "A URL da imagem é obrigatória."],
     },
-    vendor: {
+    seller: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

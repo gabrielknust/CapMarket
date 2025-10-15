@@ -4,21 +4,21 @@ import User from "../models/user.model";
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { nome, preco, descricao, urlImagem, vendedor } = req.body;
+    const { name, price, description, imageUrl, seller } = req.body;
 
-    const sellerExists = await User.findById(vendedor);
-    if (!sellerExists || sellerExists.papel !== "Vendedor") {
+    const sellerExists = await User.findById(seller);
+    if (!sellerExists || sellerExists.role !== "Vendedor") {
       return res
         .status(400)
         .json({ message: "Vendedor inválido ou não encontrado." });
     }
 
     const newProduct = new Product({
-      nome,
-      preco,
-      descricao,
-      urlImagem,
-      vendedor,
+      name,
+      price,
+      description,
+      imageUrl,
+      seller,
     });
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
@@ -29,11 +29,11 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllProducts = async (res: Response) => {
+export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    const products = await Product.find({ isAtivo: true }).populate(
-      "vendedor",
-      "nome email",
+    const products = await Product.find({ isActive: true }).populate(
+      "seller",
+      "name email",
     );
     res.status(200).json(products);
   } catch (error) {
@@ -48,9 +48,9 @@ export const getAllProducts = async (res: Response) => {
 export const getProductById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const product = await Product.findOne({ _id: id, isAtivo: true }).populate(
-      "vendedor",
-      "nome email",
+    const product = await Product.findOne({ _id: id, isActive: true }).populate(
+      "seller",
+      "name email",
     );
 
     if (!product) {
