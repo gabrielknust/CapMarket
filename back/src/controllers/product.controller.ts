@@ -22,7 +22,14 @@ export const createProduct = async (req: Request, res: Response) => {
     });
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
-  } catch (error) {
+  } catch (error: Error | any) {
+    if (error.name === "ValidationError") {
+      const errors: Record<string, string> = {};
+      for (const field in error.errors) {
+        errors[field] = error.errors[field].message;
+      }
+      return res.status(400).json({ message: "Erro de validação.", errors });
+    }
     const message =
       error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
     res.status(500).json({ message: "Erro ao criar produto", error: message });
