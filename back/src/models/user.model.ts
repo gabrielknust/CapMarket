@@ -3,7 +3,7 @@ import crypto from "crypto";
 
 const userSchema = new Schema(
   {
-    nome: {
+    name: {
       type: String,
       required: [true, "O nome é obrigatório."],
     },
@@ -14,7 +14,7 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
-    senha: {
+    password: {
       type: String,
       required: [true, "A senha é obrigatória."],
       select: false,
@@ -23,16 +23,16 @@ const userSchema = new Schema(
       type: String,
       select: false,
     },
-    papel: {
+    role: {
       type: String,
       required: true,
       enum: ["Cliente", "Vendedor"],
     },
-    isAtivo: {
+    isActive: {
       type: Boolean,
       default: true,
     },
-    compras: [
+    purchases: [
       {
         type: Schema.Types.ObjectId,
         ref: "Product",
@@ -52,23 +52,25 @@ userSchema.pre("save", function (next) {
   this.salt = crypto.randomBytes(16).toString("hex");
 
   const hash = crypto
-    .pbkdf2Sync(this.senha, this.salt, 100000, 64, "sha512")
+    .pbkdf2Sync(this.password, this.salt, 100000, 64, "sha512")
     .toString("hex");
 
-  this.senha = hash;
+  this.password = hash;
 
   next();
 });
 
-userSchema.methods.compararSenha = function (senhaCandidata: string): boolean {
-  const hashCandidato = crypto
-    .pbkdf2Sync(senhaCandidata, this.salt, 100000, 64, "sha512")
+userSchema.methods.comparePassword = function (
+  candidatePassword: string,
+): boolean {
+  const hashCandidate = crypto
+    .pbkdf2Sync(candidatePassword, this.salt, 100000, 64, "sha512")
     .toString("hex");
 
-  const hashReal = Buffer.from(this.senha, "hex");
-  const hashFornecido = Buffer.from(hashCandidato, "hex");
+  const hashReal = Buffer.from(this.password, "hex");
+  const hashProvided = Buffer.from(hashCandidate, "hex");
 
-  return crypto.timingSafeEqual(hashReal, hashFornecido);
+  return crypto.timingSafeEqual(hashReal, hashProvided);
 };
 
 const User = model("User", userSchema);
