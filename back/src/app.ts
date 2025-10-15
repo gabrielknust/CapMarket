@@ -1,22 +1,25 @@
 import express from "express";
-import pinoHttp from "pino-http";
+import pino from "pino";
+import pretty from "pino-pretty";
+import pinoHttp = require("pino-http");
 import userRoutes from "./routes/user.routes";
 import productRoutes from "./routes/product.routes";
 
 const app = express();
-
-const logger = (pinoHttp as any)({
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-      translateTime: "SYS:standard",
-      ignore: "pid,hostname",
-    },
-  },
+const stream = pretty({
+  colorize: true,
+  translateTime: "SYS:dd-mm-yyyy HH:MM:ss",
+  ignore: "pid,hostname",
+  sync: true,
 });
 
-app.use(logger);
+const pinoLogger = pino(stream);
+
+const loggerMiddleware = (pinoHttp as any)({
+  logger: pinoLogger,
+});
+
+app.use(loggerMiddleware);
 
 app.use(express.json());
 
