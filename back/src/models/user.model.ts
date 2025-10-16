@@ -1,5 +1,19 @@
 import { Schema, model } from "mongoose";
 import crypto from "crypto";
+import { Document } from "mongoose";
+
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password: string;
+  salt: string;
+  role: "Cliente" | "Vendedor";
+  isActive: boolean;
+  purchases: Schema.Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+  comparePassword(candidatePassword: string): boolean;
+}
 
 const userSchema = new Schema(
   {
