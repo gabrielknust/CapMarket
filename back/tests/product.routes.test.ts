@@ -174,10 +174,10 @@ describe("Product Routes API", () => {
   describe("GET /api/products", () => {
     it("should return 200 and an array of products", async () => {
       const user = await User.create(sellerFactory());
-      await Product.create([
-        productFactory({ seller: user._id }),
+      await Product.create(productFactory({ seller: user._id }));
+      await Product.create(
         productFactory({ name: "Test Product 2", seller: user._id }),
-      ]);
+      );
 
       const response = await request(app).get("/api/products");
 
