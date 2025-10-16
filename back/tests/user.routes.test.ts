@@ -22,222 +22,181 @@ describe("User Routes API", () => {
     await User.deleteMany({});
   });
 
-  it("should return 201 and create a new user and return it", async () => {
-    const userData = {
-      name: "Teste User",
+  function clientFactory(overrides = {}) {
+    return {
+      name: "Test User",
       email: "test@example.com",
       password: "password123",
       role: "Cliente",
+      ...overrides,
     };
+  }
 
-    const response = await request(app).post("/api/users").send(userData);
+  describe("POST /api/users", () => {
+    it("should return 201 and create a new user and return it", async () => {
+      const userData = clientFactory();
 
-    expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty("_id");
-    expect(response.body.email).toBe(userData.email);
-    expect(response.body).not.toHaveProperty("password"); // Teste de segurança!
-  });
+      const response = await request(app).post("/api/users").send(userData);
 
-  it("should return 400 if email already exists", async () => {
-    await User.create({
-      name: "Existing User",
-      email: "exists@example.com",
-      password: "password123",
-      role: "Vendedor",
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty("_id");
+      expect(response.body.email).toBe(userData.email);
+      expect(response.body).not.toHaveProperty("password"); // Teste de segurança!
     });
 
-    const response = await request(app).post("/api/users").send({
-      name: "Another User",
-      email: "exists@example.com",
-      password: "anotherPass",
-      role: "Cliente",
+    it("should return 400 if email already exists", async () => {
+      await User.create(clientFactory());
+
+      const response = await request(app)
+        .post("/api/users")
+        .send(clientFactory());
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe("Este email já está em uso.");
     });
 
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Este email já está em uso.");
-  });
+    it("should return 400 if name is missing", async () => {
+      const response = await request(app)
+        .post("/api/users")
+        .send(clientFactory({ name: "" }));
 
-  it("should return 400 if name is missing", async () => {
-    const response = await request(app).post("/api/users").send({
-      email: "test@example.com",
-      password: "password123",
-      role: "Cliente",
+      expect(response.status).toBe(400);
+      expect(response.body.errors.name).toBe("O nome é obrigatório.");
     });
 
-    expect(response.status).toBe(400);
-    expect(response.body.errors.name).toBe("O nome é obrigatório.");
-  });
+    it("should return 400 if email is missing", async () => {
+      const response = await request(app)
+        .post("/api/users")
+        .send(clientFactory({ email: "" }));
 
-  it("should return 400 if email is missing", async () => {
-    const response = await request(app).post("/api/users").send({
-      name: "Test User",
-      password: "password123",
-      role: "Cliente",
+      expect(response.status).toBe(400);
+      expect(response.body.errors.email).toBe("O email é obrigatório.");
     });
 
-    expect(response.status).toBe(400);
-    expect(response.body.errors.email).toBe("O email é obrigatório.");
+    it("should return 400 if password is missing", async () => {
+      const response = await request(app)
+        .post("/api/users")
+        .send(clientFactory({ password: "" }));
+
+      expect(response.status).toBe(400);
+      expect(response.body.errors.password).toBe("A senha é obrigatória.");
+    });
   });
 
-  it("should return 400 if password is missing", async () => {
-    const response = await request(app).post("/api/users").send({
-      name: "Test User",
-      email: "test@example.com",
-      role: "Cliente",
+  describe("GET /api/users", () => {
+    it("should return a list of all users", async () => {
+      await User.create(clientFactory());
+      await User.create(clientFactory({ email: "two@example.com" }));
+
+      const response = await request(app).get("/api/users");
+
+      expect(response.status).toBe(200);
+      expect(response.body).toBeInstanceOf(Array);
+      expect(response.body.length).toBe(2);
+      expect(response.body[0].email).toBe("test@example.com");
+      expect(response.body[1].email).toBe("two@example.com");
+    });
+  });
+
+  describe("GET /api/users/:id", () => {
+    it("should return a single user if ID is valid", async () => {
+      const user = await User.create(clientFactory());
+
+      const response = await request(app).get(`/api/users/${user._id}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.email).toBe(user.email);
     });
 
-    expect(response.status).toBe(400);
-    expect(response.body.errors.password).toBe("A senha é obrigatória.");
+    it("should return 404 if ID is not found", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const response = await request(app).get(`/api/users/${nonExistentId}`);
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe("Usuário não encontrado.");
+    });
   });
 
-  it("should return a list of all users", async () => {
-    await User.create([
-      {
-        name: "User One",
-        email: "one@example.com",
-        password: "p1",
-        role: "Cliente",
-      },
-      {
-        name: "User Two",
-        email: "two@example.com",
-        password: "p2",
-        role: "Vendedor",
-      },
-    ]);
+  describe("PATCH /api/users/:id", () => {
+    it("should return 201 when updating a user's name successfully", async () => {
+      const user = await User.create(clientFactory());
 
-    const response = await request(app).get("/api/users");
+      const updates = { name: "New Name" };
+      const response = await request(app)
+        .patch(`/api/users/${user._id}`)
+        .send(updates);
 
-    expect(response.status).toBe(200);
-    expect(response.body).toBeInstanceOf(Array);
-    expect(response.body.length).toBe(2);
-    expect(response.body[0].email).toBe("one@example.com");
-    expect(response.body[1].email).toBe("two@example.com");
-  });
-
-  it("should return a single user if ID is valid", async () => {
-    const user = await User.create({
-      name: "Teste User",
-      email: "test@example.com",
-      password: "password123",
-      role: "Cliente",
+      expect(response.status).toBe(200);
+      expect(response.body.name).toBe("New Name");
     });
 
-    const response = await request(app).get(`/api/users/${user._id}`);
+    it("should return 201 when updating a user's email successfully", async () => {
+      const user = await User.create(clientFactory());
 
-    expect(response.status).toBe(200);
-    expect(response.body.email).toBe("test@example.com");
-  });
+      const updates = { email: "new@example.com" };
+      const response = await request(app)
+        .patch(`/api/users/${user._id}`)
+        .send(updates);
 
-  it("should return 404 if ID is not found", async () => {
-    const nonExistentId = new mongoose.Types.ObjectId();
-    const response = await request(app).get(`/api/users/${nonExistentId}`);
-    expect(response.status).toBe(404);
-    expect(response.body.message).toBe("Usuário não encontrado.");
-  });
-
-  it("should return 201 when updating a user's name successfully", async () => {
-    const user = await User.create({
-      name: "Old Name",
-      email: "test@example.com",
-      password: "password123",
-      role: "Cliente",
+      expect(response.status).toBe(200);
+      expect(response.body.email).toBe("new@example.com");
+      expect(response.body.name).toBe("Test User");
     });
 
-    const updates = { name: "New Name" };
-    const response = await request(app)
-      .patch(`/api/users/${user._id}`)
-      .send(updates);
+    it("should return 201 when updating a user's role successfully", async () => {
+      const user = await User.create(clientFactory());
 
-    expect(response.status).toBe(200);
-    expect(response.body.name).toBe("New Name");
-  });
+      const updates = { role: "Vendedor" };
+      const response = await request(app)
+        .patch(`/api/users/${user._id}`)
+        .send(updates);
 
-  it("should return 201 when updating a user's email successfully", async () => {
-    const user = await User.create({
-      name: "User Name",
-      email: "test@example.com",
-      password: "password123",
-      role: "Cliente",
+      expect(response.status).toBe(200);
+      expect(response.body.role).toBe("Vendedor");
     });
 
-    const updates = { email: "new@example.com" };
-    const response = await request(app)
-      .patch(`/api/users/${user._id}`)
-      .send(updates);
+    it("should return 201 when updating a user's password successfully", async () => {
+      const user = await User.create(clientFactory());
 
-    expect(response.status).toBe(200);
-    expect(response.body.email).toBe("new@example.com");
-    expect(response.body.name).toBe("User Name");
-  });
+      const updates = { password: "newPass" };
+      const response = await request(app)
+        .patch(`/api/users/${user._id}`)
+        .send(updates);
 
-  it("should return 201 when updating a user's role successfully", async () => {
-    const user = await User.create({
-      name: "User Name",
-      email: "test@example.com",
-      password: "password123",
-      role: "Cliente",
+      expect(response.status).toBe(200);
+      expect(response.body.password).not.toBe("newPass");
     });
 
-    const updates = { role: "Vendedor" };
-    const response = await request(app)
-      .patch(`/api/users/${user._id}`)
-      .send(updates);
+    it("should return 404 when trying to update a non-existent user", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const updates = { name: "New Name" };
+      const response = await request(app)
+        .patch(`/api/users/${nonExistentId}`)
+        .send(updates);
 
-    expect(response.status).toBe(200);
-    expect(response.body.role).toBe("Vendedor");
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe("Usuário não encontrado.");
+    });
   });
 
-  it("should return 201 when updating a user's password successfully", async () => {
-    const user = await User.create({
-      name: "User Name",
-      email: "test@example.com",
-      password: "password123",
-      role: "Cliente",
+  describe("DELETE /api/users/:id", () => {
+    it("should delete a user successfully", async () => {
+      const user = await User.create(clientFactory());
+
+      const response = await request(app).delete(`/api/users/${user._id}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe("Usuário deletado com sucesso.");
+
+      const checkUser = await User.findById(user._id);
+      expect(checkUser?.isActive).toBe(false);
     });
 
-    const updates = { password: "newPass" };
-    const response = await request(app)
-      .patch(`/api/users/${user._id}`)
-      .send(updates);
+    it("should return 404 when trying to delete a non-existent user", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const response = await request(app).delete(`/api/users/${nonExistentId}`);
 
-    expect(response.status).toBe(200);
-    expect(response.body.password).not.toBe("newPass");
-  });
-
-  it("should return 404 when trying to update a non-existent user", async () => {
-    const nonExistentId = new mongoose.Types.ObjectId();
-    const updates = { name: "New Name" };
-    const response = await request(app)
-      .patch(`/api/users/${nonExistentId}`)
-      .send(updates);
-
-    expect(response.status).toBe(404);
-    expect(response.body.message).toBe("Usuário não encontrado.");
-  });
-
-  it("should delete a user successfully", async () => {
-    const user = await User.create({
-      name: "User To Delete",
-      email: "delete@example.com",
-      password: "password123",
-      role: "Cliente",
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe("Usuário não encontrado.");
     });
-
-    const response = await request(app).delete(`/api/users/${user._id}`);
-
-    expect(response.status).toBe(200);
-    expect(response.body.message).toBe("Usuário deletado com sucesso.");
-
-    const checkUser = await User.findById(user._id);
-    expect(checkUser?.isActive).toBe(false);
-  });
-
-  it("should return 404 when trying to delete a non-existent user", async () => {
-    const nonExistentId = new mongoose.Types.ObjectId();
-    const response = await request(app).delete(`/api/users/${nonExistentId}`);
-
-    expect(response.status).toBe(404);
-    expect(response.body.message).toBe("Usuário não encontrado.");
   });
 });
