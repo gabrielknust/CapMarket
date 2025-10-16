@@ -9,7 +9,7 @@ interface ICartItem {
 
 export interface ICart extends Document {
   customer: PopulatedDoc<IUser & Document>;
-  itens: ICartItem[];
+  items: ICartItem[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,7 +22,7 @@ const cartSchema = new Schema<ICart>(
       required: true,
       unique: true,
     },
-    itens: [
+    items: [
       {
         product: {
           type: Schema.Types.ObjectId,
