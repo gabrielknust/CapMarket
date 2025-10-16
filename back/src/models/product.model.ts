@@ -1,4 +1,17 @@
 import { Schema, model } from "mongoose";
+import { Document } from "mongoose";
+
+export interface IProduct extends Document {
+  name: string;
+  price: number;
+  description: string;
+  dateCreated: Date;
+  urlImage: string;
+  seller: Schema.Types.ObjectId;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const productSchema = new Schema(
   {
