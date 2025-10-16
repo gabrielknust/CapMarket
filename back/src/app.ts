@@ -36,7 +36,9 @@ const loggerMiddleware = (pinoHttp as any)({
   },
 });
 
-app.use(loggerMiddleware);
+if (process.env.NODE_ENV !== "test") {
+  app.use(loggerMiddleware);
+}
 
 app.use(express.json());
 
