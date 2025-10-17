@@ -1,40 +1,14 @@
 import type { Request, Response } from "express";
 import Product from "../models/product.model";
-import User from "../models/user.model";
 import Cart from "../models/cart.model";
+import { AuthenticatedRequest } from "../middleware/login.middleware";
 
-export const createCart = async (req: Request, res: Response) => {
+export const getCartByUserId = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   try {
-    const { userId } = req.body;
-
-    const userExists = await User.findById(userId);
-    if (!userExists) {
-      return res.status(400).json({ message: "Usuário não encontrado." });
-    }
-
-    const newCart = new Cart({
-      user: userId,
-      products: [],
-    });
-    const savedCart = await newCart.save();
-    res.status(201).json(savedCart);
-  } catch (error: Error | any) {
-    if (error.name === "ValidationError") {
-      const errors: Record<string, string> = {};
-      for (const field in error.errors) {
-        errors[field] = error.errors[field].message;
-      }
-      return res.status(400).json({ message: "Erro de validação.", errors });
-    }
-    const message =
-      error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
-    res.status(500).json({ message: "Erro ao criar carrinho", error: message });
-  }
-};
-
-export const getCartByUserId = async (req: Request, res: Response) => {
-  try {
-    const { userId } = req.params;
+    const userId = req.user?.id;
     const cart = await Cart.findOne({ user: userId }).populate({
       path: "products.product",
       model: "Product",
@@ -52,9 +26,12 @@ export const getCartByUserId = async (req: Request, res: Response) => {
   }
 };
 
-export const addProductToCart = async (req: Request, res: Response) => {
+export const addProductToCart = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user?.id;
     const { productId, quantity } = req.body;
 
     const cart = await Cart.findOne({ user: userId });
@@ -95,9 +72,13 @@ export const addProductToCart = async (req: Request, res: Response) => {
   }
 };
 
-export const removeProductFromCart = async (req: Request, res: Response) => {
+export const removeProductFromCart = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   try {
-    const { userId, productId } = req.params;
+    const userId = req.user?.id;
+    const { productId } = req.params;
 
     const cart = await Cart.findOne({ user: userId });
     if (!cart) {
@@ -126,9 +107,9 @@ export const removeProductFromCart = async (req: Request, res: Response) => {
   }
 };
 
-export const clearCart = async (req: Request, res: Response) => {
+export const clearCart = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user?.id;
 
     const cart = await Cart.findOne({ user: userId });
     if (!cart) {

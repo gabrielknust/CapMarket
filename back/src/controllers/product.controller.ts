@@ -1,10 +1,15 @@
 import type { Request, Response } from "express";
 import Product from "../models/product.model";
 import User from "../models/user.model";
+import { AuthenticatedRequest } from "../middleware/login.middleware";
 
-export const createProduct = async (req: Request, res: Response) => {
+export const createProduct = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   try {
-    const { name, price, description, urlImage, seller } = req.body;
+    const seller = req.user?.id;
+    const { name, price, description, urlImage } = req.body;
 
     const sellerExists = await User.findById(seller);
     if (!sellerExists || sellerExists.role !== "Vendedor") {
@@ -36,7 +41,10 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllProducts = async (req: Request, res: Response) => {
+export const getAllProducts = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   try {
     const products = await Product.find({ isActive: true }).populate(
       "seller",
@@ -52,7 +60,10 @@ export const getAllProducts = async (req: Request, res: Response) => {
   }
 };
 
-export const getProductById = async (req: Request, res: Response) => {
+export const getProductById = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   try {
     const { id } = req.params;
     const product = await Product.findOne({ _id: id, isActive: true }).populate(
@@ -74,9 +85,12 @@ export const getProductById = async (req: Request, res: Response) => {
   }
 };
 
-export const getProductsBySeller = async (req: Request, res: Response) => {
+export const getProductsBySeller = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   try {
-    const { sellerId } = req.params;
+    const sellerId = req.user?.id;
 
     const sellerExists = await User.findById(sellerId);
     if (!sellerExists || sellerExists.role !== "Vendedor") {
@@ -100,7 +114,10 @@ export const getProductsBySeller = async (req: Request, res: Response) => {
   }
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+export const updateProduct = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   try {
     const { id } = req.params;
     const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
@@ -129,7 +146,10 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+export const deleteProduct = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
   try {
     const { id } = req.params;
     const deactivatedProduct = await Product.findByIdAndUpdate(

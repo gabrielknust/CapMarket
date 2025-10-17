@@ -1,7 +1,9 @@
 import type { Request, Response } from "express";
 import User from "../models/user.model";
+import Cart from "../models/cart.model";
+import { AuthenticatedRequest } from "../middleware/login.middleware";
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { name, email, password, role } = req.body;
     const userExists = await User.findOne({ email });
@@ -18,6 +20,8 @@ export const createUser = async (req: Request, res: Response) => {
       role: newUser.role,
     };
 
+    await Cart.create({ user: newUser._id });
+
     res.status(201).json(userResponse);
   } catch (error: Error | any) {
     if (error.name === "ValidationError") {
@@ -33,7 +37,7 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllUsers = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const users = await User.find();
     res.status(200).json(users);
@@ -46,7 +50,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserById = async (req: Request, res: Response) => {
+export const getUserById = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
@@ -63,7 +67,7 @@ export const getUserById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -94,7 +98,7 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const deletedUser = await User.findByIdAndUpdate(id, { isActive: false });
