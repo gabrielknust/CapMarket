@@ -60,18 +60,13 @@ const userSchema = new Schema(
 );
 
 userSchema.pre("save", function (next) {
-  if (!this.isModified("senha")) {
+  if (!this.isModified("password")) {
     return next();
   }
-
   this.salt = crypto.randomBytes(16).toString("hex");
-
-  const hash = crypto
+  this.password = crypto
     .pbkdf2Sync(this.password, this.salt, 100000, 64, "sha512")
     .toString("hex");
-
-  this.password = hash;
-
   next();
 });
 

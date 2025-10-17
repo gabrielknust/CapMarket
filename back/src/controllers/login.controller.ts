@@ -5,8 +5,14 @@ import { JWT_SECRET } from "../../config";
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, senha } = req.body;
-    const user = await User.findOne({ email }).select("+senha +salt");
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Todos os campos são obrigatórios." });
+    }
+
+    const user = await User.findOne({ email }).select("+password +salt");
 
     if (!user) {
       return res.status(401).json({ message: "Credenciais inválidas." });
@@ -16,7 +22,7 @@ export const login = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Esta conta está desativada." });
     }
 
-    const isPasswordValid = user.comparePassword(senha);
+    const isPasswordValid = user.comparePassword(password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Credenciais inválidas." });
     }
@@ -32,7 +38,7 @@ export const login = async (req: Request, res: Response) => {
 
     res.status(200).json({ token });
   } catch (error) {
-    req.log.error(error, "Erro no processo de login");
+    console.error(error);
     const message =
       error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
     res
