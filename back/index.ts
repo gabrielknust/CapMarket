@@ -1,12 +1,12 @@
 import app from "./src/app";
 import connectDB from "./src/config/database";
+import { PORT } from "./config";
 
 const startServer = async () => {
   await connectDB();
-  const port = process.env.PORT;
 
-  app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}`);
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
   });
 };
 

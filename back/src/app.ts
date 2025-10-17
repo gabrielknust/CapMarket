@@ -1,5 +1,3 @@
-// src/app.ts
-
 import express, { Request, Response, NextFunction } from "express";
 import pino from "pino";
 import pretty from "pino-pretty";
@@ -36,9 +34,7 @@ const loggerMiddleware = (pinoHttp as any)({
   },
 });
 
-if (process.env.NODE_ENV !== "test") {
-  app.use(loggerMiddleware);
-}
+app.use(loggerMiddleware);
 
 app.use(express.json());
 

@@ -20,7 +20,7 @@ export const createUser = async (req: AuthenticatedRequest, res: Response) => {
       role: newUser.role,
     };
 
-    await Cart.create({ user: newUser._id });
+    await Cart.create({ customer: newUser._id });
 
     res.status(201).json(userResponse);
   } catch (error: Error | any) {
