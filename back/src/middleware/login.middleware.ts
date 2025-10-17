@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../../config";
+import User from "../models/user.model";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -8,7 +10,7 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export const authMiddleware = (
+export const authMiddleware = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
@@ -24,10 +26,22 @@ export const authMiddleware = (
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+    const decoded = jwt.verify(token, JWT_SECRET!) as {
       id: string;
       papel: string;
     };
+
+    const freshUser = await User.findById(decoded.id);
+
+    if (!freshUser) {
+      return res.status(401).json({ message: "Usuário não encontrado." });
+    }
+
+    if (!freshUser.isActive) {
+      return res
+        .status(403)
+        .json({ message: "Usuário desativado. Acesso proibido." });
+    }
 
     req.user = decoded;
 

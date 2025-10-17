@@ -4,6 +4,9 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import app from "../src/app";
 import User from "../src/models/user.model";
 import Product from "../src/models/product.model";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../config";
+import { IUser } from "../src/models/user.model";
 
 let mongoServer: MongoMemoryServer;
 
@@ -44,20 +47,41 @@ describe("Product Routes API", () => {
     };
   }
 
+  async function authClient(overrides: Record<string, any> = {}) {
+    console.log("overrides:", overrides);
+    const client: IUser = await User.create(
+      sellerFactory({ email: "auth@example.com", ...overrides }),
+    );
+    const payload = { id: client._id.toString(), papel: client.role };
+    const token = jwt.sign(payload, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    return { token, userId: client._id.toString() };
+  }
+
+  let token: string;
+  let userId: string;
+
+  beforeEach(async () => {
+    ({ token, userId } = await authClient());
+  });
+
   describe("POST /api/products", () => {
     it("should return 201 and create a new product and return it", async () => {
-      const user = await User.create(sellerFactory());
-      const productData = productFactory({ seller: user._id });
+      const productData = productFactory({ seller: userId });
 
       const response = await request(app)
         .post("/api/products")
-        .send(productData);
+        .send(productData)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty("_id");
       expect(response.body.name).toBe(productData.name);
+      expect(response.body.price).toBe(productData.price);
       expect(response.body).toHaveProperty("seller");
-      expect(response.body.seller).toEqual(user._id.toString());
+      expect(response.body.seller).toEqual(userId.toString());
     });
 
     it("should return 400 when creating a product without a name", async () => {
@@ -66,7 +90,8 @@ describe("Product Routes API", () => {
 
       const response = await request(app)
         .post("/api/products")
-        .send(productData);
+        .send(productData)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("message", "Erro de validação.");
@@ -82,7 +107,8 @@ describe("Product Routes API", () => {
 
       const response = await request(app)
         .post("/api/products")
-        .send(productData);
+        .send(productData)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("message", "Erro de validação.");
@@ -98,7 +124,8 @@ describe("Product Routes API", () => {
 
       const response = await request(app)
         .post("/api/products")
-        .send(productData);
+        .send(productData)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("message", "Erro de validação.");
@@ -114,7 +141,8 @@ describe("Product Routes API", () => {
 
       const response = await request(app)
         .post("/api/products")
-        .send(productData);
+        .send(productData)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("message", "Erro de validação.");
@@ -124,44 +152,18 @@ describe("Product Routes API", () => {
       );
     });
 
-    it("should return 400 when creating a product without a seller", async () => {
-      const productData = productFactory();
-
-      const response = await request(app)
-        .post("/api/products")
-        .send(productData);
-
-      expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty(
-        "message",
-        "Vendedor inválido ou não encontrado.",
-      );
-    });
-
-    it("should return 400 when creating a product with an invalid seller", async () => {
-      const user = await User.create(sellerFactory());
-      const productData = productFactory({
-        seller: new mongoose.Types.ObjectId(),
+    it("should return 400 when creating a product with a non-vendor seller", async () => {
+      const client = await authClient({
+        role: "Cliente",
+        email: "client@example.com",
       });
 
-      const response = await request(app)
-        .post("/api/products")
-        .send(productData);
-
-      expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty(
-        "message",
-        "Vendedor inválido ou não encontrado.",
-      );
-    });
-
-    it("should return 400 when creating a product with a non-vendor seller", async () => {
-      const user = await User.create(sellerFactory({ role: "Cliente" }));
-      const productData = productFactory({ seller: user._id });
+      const productData = productFactory({ seller: client.userId });
 
       const response = await request(app)
         .post("/api/products")
-        .send(productData);
+        .send(productData)
+        .set("Authorization", `Bearer ${client.token}`);
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty(
@@ -179,7 +181,9 @@ describe("Product Routes API", () => {
         productFactory({ name: "Test Product 2", seller: user._id }),
       );
 
-      const response = await request(app).get("/api/products");
+      const response = await request(app)
+        .get("/api/products")
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -196,7 +200,9 @@ describe("Product Routes API", () => {
         productFactory({ seller: user._id }),
       );
 
-      const response = await request(app).get(`/api/products/${product._id}`);
+      const response = await request(app)
+        .get(`/api/products/${product._id}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("_id", product._id.toString());
@@ -204,7 +210,9 @@ describe("Product Routes API", () => {
 
     it("should return 404 when fetching a non-existent product by ID", async () => {
       const nonExistentId = new mongoose.Types.ObjectId();
-      const response = await request(app).get(`/api/products/${nonExistentId}`);
+      const response = await request(app)
+        .get(`/api/products/${nonExistentId}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty(
@@ -219,7 +227,9 @@ describe("Product Routes API", () => {
         productFactory({ seller: user._id, isActive: false }),
       );
 
-      const response = await request(app).get(`/api/products/${product._id}`);
+      const response = await request(app)
+        .get(`/api/products/${product._id}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty(
@@ -231,31 +241,34 @@ describe("Product Routes API", () => {
 
   describe("GET /api/products/seller/:sellerId", () => {
     it("should return an array of products with populated seller info", async () => {
-      const user = await User.create(sellerFactory());
       await Product.create([
-        productFactory({ seller: user._id }),
-        productFactory({ name: "Test Product 2", seller: user._id }),
+        productFactory({ seller: userId }),
+        productFactory({ name: "Test Product 2", seller: userId }),
       ]);
 
-      const response = await request(app).get(
-        `/api/products/seller/${user._id}`,
-      );
+      const response = await request(app)
+        .get(`/api/products/seller/${userId}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      console.log("Response body:", response.body);
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBe(2);
       response.body.forEach((product: any) => {
         expect(product).toHaveProperty("seller");
-        expect(product.seller).toHaveProperty("name", user.name);
-        expect(product.seller).toHaveProperty("email", user.email);
+        expect(product.seller).toHaveProperty("name");
+        expect(product.seller).toHaveProperty("email");
+        expect(product.seller.name).toBe("Test User");
+        expect(product.seller.email).toBe("auth@example.com");
       });
     });
 
     it("should return 404 when fetching products for a non-existent seller", async () => {
       const nonExistentId = new mongoose.Types.ObjectId();
-      const response = await request(app).get(
-        `/api/products/seller/${nonExistentId}`,
-      );
+      const response = await request(app)
+        .get(`/api/products/seller/${nonExistentId}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty(
@@ -267,9 +280,9 @@ describe("Product Routes API", () => {
     it("should return 200 and an empty array when seller has no products", async () => {
       const user = await User.create(sellerFactory());
 
-      const response = await request(app).get(
-        `/api/products/seller/${user._id}`,
-      );
+      const response = await request(app)
+        .get(`/api/products/seller/${user._id}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -292,7 +305,8 @@ describe("Product Routes API", () => {
 
       const response = await request(app)
         .patch(`/api/products/${product._id}`)
-        .send(updatedData);
+        .send(updatedData)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("_id", product._id.toString());
@@ -313,7 +327,8 @@ describe("Product Routes API", () => {
 
       const response = await request(app)
         .patch(`/api/products/${nonExistentId}`)
-        .send(updatedData);
+        .send(updatedData)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty(
@@ -333,7 +348,8 @@ describe("Product Routes API", () => {
 
       const response = await request(app)
         .patch(`/api/products/${product._id}`)
-        .send(updatedData);
+        .send(updatedData)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("message", "Erro de validação.");
@@ -349,7 +365,9 @@ describe("Product Routes API", () => {
         productFactory({ seller: user._id }),
       );
 
-      const response = await request(app).patch(`/api/products/${product._id}`);
+      const response = await request(app)
+        .patch(`/api/products/${product._id}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("_id", product._id.toString());
@@ -367,9 +385,9 @@ describe("Product Routes API", () => {
         productFactory({ seller: user._id }),
       );
 
-      const response = await request(app).delete(
-        `/api/products/${product._id}`,
-      );
+      const response = await request(app)
+        .delete(`/api/products/${product._id}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty(
@@ -381,9 +399,9 @@ describe("Product Routes API", () => {
 
     it("should return 404 when deleting a non-existent product by ID", async () => {
       const nonExistentId = new mongoose.Types.ObjectId();
-      const response = await request(app).delete(
-        `/api/products/${nonExistentId}`,
-      );
+      const response = await request(app)
+        .delete(`/api/products/${nonExistentId}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty(

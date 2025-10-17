@@ -90,7 +90,7 @@ export const getProductsBySeller = async (
   res: Response,
 ) => {
   try {
-    const sellerId = req.user?.id;
+    const { sellerId } = req.params;
 
     const sellerExists = await User.findById(sellerId);
     if (!sellerExists || sellerExists.role !== "Vendedor") {
@@ -145,7 +145,7 @@ export const updateProduct = async (
       .json({ message: "Erro ao atualizar produto", error: message });
   }
 };
-
+//TODO: deletar somente produtos do próprio vendedor
 export const deleteProduct = async (
   req: AuthenticatedRequest,
   res: Response,

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import User from "../models/user.model";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../../config";
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -9,6 +10,10 @@ export const login = async (req: Request, res: Response) => {
 
     if (!user) {
       return res.status(401).json({ message: "Credenciais inválidas." });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Esta conta está desativada." });
     }
 
     const isPasswordValid = user.comparePassword(senha);
@@ -21,7 +26,7 @@ export const login = async (req: Request, res: Response) => {
       role: user.role,
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET!, {
+    const token = jwt.sign(payload, JWT_SECRET, {
       expiresIn: "8h",
     });
 
