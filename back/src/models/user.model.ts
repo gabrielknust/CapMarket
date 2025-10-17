@@ -87,5 +87,5 @@ userSchema.methods.comparePassword = function (
   return crypto.timingSafeEqual(hashReal, hashProvided);
 };
 
-const User = model("User", userSchema);
+const User = model<IUser>("User", userSchema);
 export default User;

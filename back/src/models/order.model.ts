@@ -1,5 +1,23 @@
 import { Schema, model } from "mongoose";
 
+interface IOrder {
+  client: Schema.Types.ObjectId;
+  products: {
+    productId: Schema.Types.ObjectId;
+    name: string;
+    unitaryPrice: number;
+    quantity: number;
+  }[];
+  totalOrder: number;
+  status: "Pendente" | "Pago" | "Enviado" | "Entregue" | "Cancelado";
+  dateOrder: Date;
+  address: {
+    rua: string;
+    cidade: string;
+    cep: string;
+  };
+}
+
 const orderSchema = new Schema(
   {
     client: {
@@ -44,5 +62,5 @@ const orderSchema = new Schema(
   },
 );
 
-const Order = model("Order", orderSchema);
+const Order = model<IOrder>("Order", orderSchema);
 export default Order;
