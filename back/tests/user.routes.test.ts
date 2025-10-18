@@ -5,6 +5,7 @@ import app from "../src/app";
 import User, { IUser } from "../src/models/user.model";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
+import Product from "../src/models/product.model";
 
 let mongoServer: MongoMemoryServer;
 
@@ -232,6 +233,30 @@ describe("User Routes API", () => {
 
         expect(response.status).toBe(404);
         expect(response.body.message).toBe("Usuário não encontrado.");
+      });
+
+      it("should deactivate products when a 'Vendedor' user is deleted", async () => {
+        const seller = await User.create(
+          clientFactory({ role: "Vendedor", email: "seller@example.com" }),
+        );
+        const product = await Product.create({
+          name: "Test Product",
+          price: 100,
+          description: "This is a test product",
+          urlImage: "http://example.com/image.jpg",
+          seller: seller._id,
+          isActive: true,
+        });
+
+        const response = await request(app)
+          .delete(`/api/users/${seller._id}`)
+          .set("Authorization", `Bearer ${token}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Usuário deletado com sucesso.");
+
+        const updatedProduct = await Product.findById(product._id);
+        expect(updatedProduct?.isActive).toBe(false);
       });
     });
   });
