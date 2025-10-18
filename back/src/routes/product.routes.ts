@@ -6,8 +6,10 @@ import {
   getProductsBySeller,
   updateProduct,
   deleteProduct,
+  uploadProductsFromCSV,
 } from "../controllers/product.controller";
 import { authMiddleware } from "../middleware/login.middleware";
+import upload from "../config/multer.config";
 
 const router = Router();
 
@@ -17,5 +19,11 @@ router.get("/:id", authMiddleware, getProductById);
 router.get("/seller/:sellerId", authMiddleware, getProductsBySeller);
 router.patch("/:id", authMiddleware, updateProduct);
 router.delete("/:id", authMiddleware, deleteProduct);
+router.post(
+  "/upload",
+  authMiddleware,
+  upload.single("products-csv"),
+  uploadProductsFromCSV,
+);
 
 export default router;

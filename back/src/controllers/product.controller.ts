@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import Product from "../models/product.model";
 import User from "../models/user.model";
 import { AuthenticatedRequest } from "../middleware/login.middleware";
+import csv from "csv-parser";
+import { Readable } from "stream";
 
 export const createProduct = async (
   req: AuthenticatedRequest,
@@ -176,4 +178,77 @@ export const deleteProduct = async (
       .status(500)
       .json({ message: "Erro ao desativar produto", error: message });
   }
+};
+
+export const uploadProductsFromCSV = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  const userId = req.user?.id;
+  if (req.user?.papel !== "Vendedor") {
+    return res.status(403).json({
+      message:
+        "Acesso negado. Apenas vendedores podem fazer upload de produtos.",
+    });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({ message: "Nenhum arquivo CSV enviado." });
+  }
+
+  const productsToInsert: any[] = [];
+  const errors: string[] = [];
+  let rowCounter = 1;
+
+  const readableFileStream = Readable.from(req.file.buffer);
+
+  readableFileStream
+    .pipe(csv())
+    .on("data", (row) => {
+      const { nome, preco, descricao, urlImagem } = row;
+
+      if (!nome || !preco || !descricao || !urlImagem) {
+        errors.push(
+          `Linha ${rowCounter}: Campos obrigatórios (nome, preco, descricao, urlImagem) estão faltando.`,
+        );
+      } else if (isNaN(parseFloat(preco))) {
+        errors.push(
+          `Linha ${rowCounter}: O preço "${preco}" não é um número válido.`,
+        );
+      } else {
+        productsToInsert.push({
+          name: nome,
+          price: parseFloat(preco),
+          description: descricao,
+          urlImage: urlImagem,
+          seller: userId,
+          isActive: true,
+        });
+      }
+      rowCounter++;
+    })
+    .on("end", async () => {
+      if (productsToInsert.length > 0) {
+        try {
+          await Product.insertMany(productsToInsert);
+        } catch (dbError: Error | any) {
+          return res.status(500).json({
+            message: "Ocorreu um erro no banco de dados durante a inserção.",
+            databaseError: dbError.message,
+          });
+        }
+      }
+
+      res.status(200).json({
+        message: "Processamento do CSV concluído.",
+        produtosCriados: productsToInsert.length,
+        errosEncontrados: errors.length,
+        detalhesDosErros: errors,
+      });
+    })
+    .on("error", (err) => {
+      res
+        .status(500)
+        .json({ message: "Erro ao ler o arquivo CSV.", error: err.message });
+    });
 };

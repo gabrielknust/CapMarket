@@ -7,6 +7,8 @@ import Product from "../src/models/product.model";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 import { IUser } from "../src/models/user.model";
+import fs from "fs";
+import path from "path";
 
 let mongoServer: MongoMemoryServer;
 
@@ -168,6 +170,60 @@ describe("Product Routes API", () => {
       expect(response.body).toHaveProperty(
         "message",
         "Apenas usuários com papel de Vendedor podem criar produtos.",
+      );
+    });
+  });
+
+  describe("POST /api/products/upload", () => {
+    const csvFilePath = path.join(__dirname, "data", "example.csv");
+
+    it.only("should return 200 and process CSV upload", async () => {
+      const response = await request(app)
+        .post("/api/products/upload")
+        .set("Authorization", `Bearer ${token}`)
+        .attach("products-csv", csvFilePath);
+      console.log(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty(
+        "message",
+        "Processamento do CSV concluído.",
+      );
+      expect(response.body).toHaveProperty("produtosCriados", 2);
+
+      const productsInDb = await Product.find({});
+      expect(productsInDb.length).toBe(2);
+      expect(productsInDb[0].name).toBe("Notebook Gamer Pro X");
+      expect(productsInDb[1].name).toBe("Mouse Sem Fio Ergonômico");
+    });
+
+    it("should return 400 when no file is uploaded", async () => {
+      const response = await request(app)
+        .post("/api/products/upload")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty(
+        "message",
+        "Nenhum arquivo CSV enviado.",
+      );
+    });
+
+    it("should return 403 when a non-vendor tries to upload CSV", async () => {
+      const client = await authClient({
+        role: "Cliente",
+        email: "client@example.com",
+      });
+
+      const response = await request(app)
+        .post("/api/products/upload")
+        .set("Authorization", `Bearer ${client.token}`)
+        .attach("products-csv", csvFilePath);
+
+      expect(response.status).toBe(403);
+      expect(response.body).toHaveProperty(
+        "message",
+        "Acesso negado. Apenas vendedores podem fazer upload de produtos.",
       );
     });
   });
