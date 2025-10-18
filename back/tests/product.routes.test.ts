@@ -7,7 +7,6 @@ import Product from "../src/models/product.model";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 import { IUser } from "../src/models/user.model";
-import fs from "fs";
 import path from "path";
 
 let mongoServer: MongoMemoryServer;
@@ -177,7 +176,7 @@ describe("Product Routes API", () => {
   describe("POST /api/products/upload", () => {
     const csvFilePath = path.join(__dirname, "data", "example.csv");
 
-    it.only("should return 200 and process CSV upload", async () => {
+    it("should return 200 and process CSV upload", async () => {
       const response = await request(app)
         .post("/api/products/upload")
         .set("Authorization", `Bearer ${token}`)
@@ -308,12 +307,13 @@ describe("Product Routes API", () => {
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBe(2);
+      console.log(response.body);
       response.body.forEach((product: any) => {
-        expect(product).toHaveProperty("seller");
-        expect(product.seller).toHaveProperty("name");
-        expect(product.seller).toHaveProperty("email");
-        expect(product.seller.name).toBe("Test User");
-        expect(product.seller.email).toBe("auth@example.com");
+        expect(product).toHaveProperty("sellerInfo");
+        expect(product.sellerInfo).toHaveProperty("name");
+        expect(product.sellerInfo).toHaveProperty("email");
+        expect(product.sellerInfo.name).toBe("Test User");
+        expect(product.sellerInfo.email).toBe("auth@example.com");
       });
     });
 

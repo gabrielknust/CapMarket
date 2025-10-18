@@ -4,6 +4,7 @@ import User from "../models/user.model";
 import { AuthenticatedRequest } from "../middleware/login.middleware";
 import csv from "csv-parser";
 import { Readable } from "stream";
+import mongoose from "mongoose";
 
 export const createProduct = async (
   req: AuthenticatedRequest,
@@ -52,10 +53,51 @@ export const getAllProducts = async (
   res: Response,
 ) => {
   try {
-    const products = await Product.find({ isActive: true }).populate(
-      "seller",
-      "name email",
-    );
+    const userId = req.user?.id;
+
+    let products;
+
+    if (userId) {
+      const pipeline = [
+        { $match: { isActive: true } },
+        {
+          $lookup: {
+            from: "favorites",
+            let: { productId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$product", "$$productId"] },
+                      { $eq: ["$user", new mongoose.Types.ObjectId(userId)] },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: "userFavorite",
+          },
+        },
+        {
+          $addFields: {
+            isFavorited: { $gt: [{ $size: "$userFavorite" }, 0] },
+          },
+        },
+        {
+          $project: {
+            userFavorite: 0,
+          },
+        },
+      ];
+
+      products = await Product.aggregate(pipeline);
+    } else {
+      products = await Product.find({ isActive: true })
+        .populate("seller", "name email")
+        .lean();
+    }
+
     res.status(200).json(products);
   } catch (error) {
     const message =
@@ -72,10 +114,68 @@ export const getProductById = async (
 ) => {
   try {
     const { id } = req.params;
-    const product = await Product.findOne({ _id: id, isActive: true }).populate(
-      "seller",
-      "name email",
-    );
+    const userId = req.user?.id;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID de produto inválido." });
+    }
+    const productId = new mongoose.Types.ObjectId(id);
+
+    let product;
+
+    if (userId) {
+      const results = await Product.aggregate([
+        { $match: { _id: productId, isActive: true } },
+        {
+          $lookup: {
+            from: "favorites",
+            let: { productId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$product", "$$productId"] },
+                      { $eq: ["$user", new mongoose.Types.ObjectId(userId)] },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: "userFavorite",
+          },
+        },
+        {
+          $addFields: {
+            isFavorited: { $gt: [{ $size: "$userFavorite" }, 0] },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "seller",
+            foreignField: "_id",
+            as: "sellerInfo",
+          },
+        },
+        { $unwind: { path: "$sellerInfo", preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            userFavorite: 0,
+            "sellerInfo.password": 0,
+            "sellerInfo.salt": 0,
+          },
+        },
+      ]);
+      product = results[0];
+    } else {
+      const foundProduct = await Product.findOne({ _id: id, isActive: true })
+        .populate("seller", "name email")
+        .lean();
+
+      if (foundProduct) {
+        product = { ...foundProduct, isFavorited: false };
+      }
+    }
 
     if (!product) {
       return res
@@ -97,6 +197,7 @@ export const getProductsBySeller = async (
 ) => {
   try {
     const { sellerId } = req.params;
+    const loggedInUserId = req.user?.id;
 
     const sellerExists = await User.findById(sellerId);
     if (!sellerExists || sellerExists.role !== "Vendedor") {
@@ -104,11 +205,71 @@ export const getProductsBySeller = async (
         .status(400)
         .json({ message: "Vendedor inválido ou não encontrado." });
     }
+    let products;
+    if (loggedInUserId) {
+      products = await Product.aggregate([
+        {
+          $match: {
+            seller: new mongoose.Types.ObjectId(sellerId),
+            isActive: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "favorites",
+            let: { productId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$product", "$$productId"] },
+                      {
+                        $eq: [
+                          "$user",
+                          new mongoose.Types.ObjectId(loggedInUserId),
+                        ],
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: "userFavorite",
+          },
+        },
+        {
+          $addFields: {
+            isFavorited: { $gt: [{ $size: "$userFavorite" }, 0] },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "seller",
+            foreignField: "_id",
+            as: "sellerInfo",
+          },
+        },
+        { $unwind: { path: "$sellerInfo", preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            userFavorite: 0,
+            "sellerInfo.password": 0,
+            "sellerInfo.salt": 0,
+          },
+        },
+      ]);
+    } else {
+      const foundProducts = await Product.find({
+        seller: sellerId,
+        isActive: true,
+      })
+        .populate("seller", "name email")
+        .lean();
 
-    const products = await Product.find({
-      seller: sellerId,
-      isActive: true,
-    }).populate("seller", "name email");
+      products = foundProducts.map((p) => ({ ...p, isFavorited: false }));
+    }
 
     res.status(200).json(products);
   } catch (error) {

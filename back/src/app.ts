@@ -4,6 +4,7 @@ import productRoutes from "./routes/product.routes";
 import loginRoutes from "./routes/login.routes";
 import cartRoutes from "./routes/cart.routes";
 import orderRoutes from "./routes/order.routes";
+import favoriteRoutes from "./routes/favorite.routes";
 import morgan from "morgan";
 
 const app = express();
@@ -26,5 +27,6 @@ app.use("/api/products", productRoutes);
 app.use("/api/login", loginRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
+app.use("/api/favorites", favoriteRoutes);
 
 export default app;
