@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import Product from "../models/product.model";
 import Cart from "../models/cart.model";
 import { AuthenticatedRequest } from "../middleware/login.middleware";
+import User from "../models/user.model";
 
 export const getCartByUserId = async (
   req: AuthenticatedRequest,
@@ -9,8 +10,8 @@ export const getCartByUserId = async (
 ) => {
   try {
     const userId = req.user?.id;
-    const cart = await Cart.findOne({ user: userId }).populate({
-      path: "products.product",
+    const cart = await Cart.findOne({ customer: userId }).populate({
+      path: "items.product",
       model: "Product",
     });
     if (!cart) {
@@ -34,7 +35,7 @@ export const addProductToCart = async (
     const userId = req.user?.id;
     const { productId, quantity } = req.body;
 
-    const cart = await Cart.findOne({ user: userId });
+    const cart = await Cart.findOne({ customer: userId });
     if (!cart) {
       return res.status(404).json({ message: "Carrinho não encontrado." });
     }
@@ -80,7 +81,7 @@ export const removeProductFromCart = async (
     const userId = req.user?.id;
     const { productId } = req.params;
 
-    const cart = await Cart.findOne({ user: userId });
+    const cart = await Cart.findOne({ customer: userId });
     if (!cart) {
       return res.status(404).json({ message: "Carrinho não encontrado." });
     }
@@ -111,7 +112,7 @@ export const clearCart = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
 
-    const cart = await Cart.findOne({ user: userId });
+    const cart = await Cart.findOne({ customer: userId });
     if (!cart) {
       return res.status(404).json({ message: "Carrinho não encontrado." });
     }

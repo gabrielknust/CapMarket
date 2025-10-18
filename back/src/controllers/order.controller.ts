@@ -8,15 +8,19 @@ import { AuthenticatedRequest } from "../middleware/login.middleware";
 export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
-    const { cartId, shippingAddress } = req.body;
+    const { shippingAddress } = req.body;
+
+    if (!shippingAddress) {
+      return res.status(400).json({ message: "Erro de validação." });
+    }
 
     const userExists = await User.findById(userId);
     if (!userExists) {
       return res.status(400).json({ message: "Usuário não encontrado." });
     }
 
-    const cart = await Cart.findById(cartId).populate({
-      path: "products.product",
+    const cart = await Cart.findOne({ customer: userId }).populate({
+      path: "items.product",
       model: "Product",
     });
     if (!cart || cart.items.length === 0) {
@@ -46,7 +50,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
     );
 
     const newOrder = new Order({
-      client: userId,
+      customer: userId,
       products: orderProducts,
       totalOrder,
       status: "Pendente",
@@ -54,7 +58,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
     });
 
     const savedOrder = await newOrder.save();
-    await Cart.findByIdAndDelete(cartId);
+    await Cart.updateOne({ customer: userId }, { items: [] });
 
     res.status(201).json(savedOrder);
   } catch (error: Error | any) {
@@ -71,19 +75,22 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-export const getAllOrders = async (
+export const getOrdersByToken = async (
   req: AuthenticatedRequest,
   res: Response,
 ) => {
   try {
-    const orders = await Order.find()
-      .populate("client")
-      .populate("products.product");
+    const userId = req.user?.id;
+    const orders = await Order.find({ customer: userId })
+      .populate("customer")
+      .populate("products.productId");
     res.status(200).json(orders);
   } catch (error: Error | any) {
     const message =
       error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
-    res.status(500).json({ message: "Erro ao buscar pedidos", error: message });
+    res
+      .status(500)
+      .json({ message: "Erro ao buscar pedidos do usuário", error: message });
   }
 };
 
@@ -94,8 +101,8 @@ export const getOrderById = async (
   try {
     const { id } = req.params;
     const order = await Order.findById(id)
-      .populate("client")
-      .populate("products.product");
+      .populate("customer")
+      .populate("products.productId");
     if (!order) {
       return res.status(404).json({ message: "Pedido não encontrado." });
     }
@@ -113,9 +120,9 @@ export const getOrdersByUserId = async (
 ) => {
   try {
     const userId = req.user?.id;
-    const orders = await Order.find({ client: userId })
-      .populate("client")
-      .populate("products.product");
+    const orders = await Order.find({ customer: userId })
+      .populate("customer")
+      .populate("products.productId");
     res.status(200).json(orders);
   } catch (error: Error | any) {
     const message =
@@ -134,24 +141,13 @@ export const updateOrderStatus = async (
     const { id } = req.params;
     const { status } = req.body;
 
-    const validStatuses = [
-      "Pendente",
-      "Em Processamento",
-      "Enviado",
-      "Entregue",
-      "Cancelado",
-    ];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: "Status inválido." });
-    }
-
     const updatedOrder = await Order.findByIdAndUpdate(
       id,
       { status },
       { new: true },
     )
-      .populate("client")
-      .populate("products.product");
+      .populate("customer")
+      .populate("products.productId");
 
     if (!updatedOrder) {
       return res.status(404).json({ message: "Pedido não encontrado." });
@@ -170,11 +166,17 @@ export const updateOrderStatus = async (
 export const deleteOrder = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const deletedOrder = await Order.findByIdAndDelete(id);
+    const deletedOrder = await Order.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true },
+    );
     if (!deletedOrder) {
       return res.status(404).json({ message: "Pedido não encontrado." });
     }
-    res.status(200).json({ message: "Pedido deletado com sucesso." });
+    res
+      .status(200)
+      .json({ message: "Pedido deletado com sucesso.", order: deletedOrder });
   } catch (error: Error | any) {
     const message =
       error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";

@@ -12,10 +12,14 @@ export const createProduct = async (
     const { name, price, description, urlImage } = req.body;
 
     const sellerExists = await User.findById(seller);
-    if (!sellerExists || sellerExists.role !== "Vendedor") {
+    if (!sellerExists) {
       return res
         .status(400)
         .json({ message: "Vendedor inválido ou não encontrado." });
+    } else if (sellerExists.role !== "Vendedor") {
+      return res.status(403).json({
+        message: "Apenas usuários com papel de Vendedor podem criar produtos.",
+      });
     }
 
     const newProduct = new Product({
@@ -145,7 +149,6 @@ export const updateProduct = async (
       .json({ message: "Erro ao atualizar produto", error: message });
   }
 };
-//TODO: deletar somente produtos do próprio vendedor
 export const deleteProduct = async (
   req: AuthenticatedRequest,
   res: Response,

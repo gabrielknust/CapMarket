@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 import crypto from "crypto";
 import { Document } from "mongoose";
+import Cart from "./cart.model";
 
 export interface IUser extends Document {
   _id: Schema.Types.ObjectId;
@@ -10,7 +11,6 @@ export interface IUser extends Document {
   salt: string;
   role: "Cliente" | "Vendedor";
   isActive: boolean;
-  purchases: Schema.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): boolean;
@@ -47,12 +47,6 @@ const userSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    purchases: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
   },
   {
     timestamps: true,
@@ -67,6 +61,23 @@ userSchema.pre("save", function (next) {
   this.password = crypto
     .pbkdf2Sync(this.password, this.salt, 100000, 64, "sha512")
     .toString("hex");
+  next();
+});
+
+userSchema.post("save", async function (doc, next) {
+  try {
+    await Cart.create({ customer: this._id });
+  } catch (error: any) {
+    if (error.code === 11000) {
+    } else {
+      console.error(
+        "Erro ao criar carrinho automaticamente para o usuário:",
+        this._id,
+        error,
+      );
+    }
+  }
+
   next();
 });
 

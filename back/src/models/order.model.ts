@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 
 interface IOrder {
-  client: Schema.Types.ObjectId;
+  customer: Schema.Types.ObjectId;
   products: {
     productId: Schema.Types.ObjectId;
     name: string;
@@ -16,11 +16,12 @@ interface IOrder {
     cidade: string;
     cep: string;
   };
+  isDeleted?: boolean;
 }
 
 const orderSchema = new Schema(
   {
-    client: {
+    customer: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -32,8 +33,6 @@ const orderSchema = new Schema(
           ref: "Product",
           required: true,
         },
-        name: { type: String, required: true },
-        unitaryPrice: { type: Number, required: true },
         quantity: { type: Number, required: true },
       },
     ],
@@ -55,6 +54,10 @@ const orderSchema = new Schema(
       rua: String,
       cidade: String,
       cep: String,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {

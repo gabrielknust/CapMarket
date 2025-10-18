@@ -48,7 +48,6 @@ describe("Product Routes API", () => {
   }
 
   async function authClient(overrides: Record<string, any> = {}) {
-    console.log("overrides:", overrides);
     const client: IUser = await User.create(
       sellerFactory({ email: "auth@example.com", ...overrides }),
     );
@@ -152,7 +151,7 @@ describe("Product Routes API", () => {
       );
     });
 
-    it("should return 400 when creating a product with a non-vendor seller", async () => {
+    it("should return 403 when creating a product with a non-vendor seller", async () => {
       const client = await authClient({
         role: "Cliente",
         email: "client@example.com",
@@ -165,10 +164,10 @@ describe("Product Routes API", () => {
         .send(productData)
         .set("Authorization", `Bearer ${client.token}`);
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(403);
       expect(response.body).toHaveProperty(
         "message",
-        "Vendedor inválido ou não encontrado.",
+        "Apenas usuários com papel de Vendedor podem criar produtos.",
       );
     });
   });
@@ -249,8 +248,6 @@ describe("Product Routes API", () => {
       const response = await request(app)
         .get(`/api/products/seller/${userId}`)
         .set("Authorization", `Bearer ${token}`);
-
-      console.log("Response body:", response.body);
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);

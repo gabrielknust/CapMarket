@@ -8,6 +8,7 @@ interface ICartItem {
 }
 
 export interface ICart extends Document {
+  _id: Schema.Types.ObjectId;
   customer: PopulatedDoc<IUser & Document>;
   items: ICartItem[];
   createdAt: Date;

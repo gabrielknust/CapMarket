@@ -1,8 +1,8 @@
 import { Router } from "express";
 import {
   createOrder,
-  getAllOrders,
   getOrderById,
+  getOrdersByToken,
   getOrdersByUserId,
   updateOrderStatus,
   deleteOrder,
@@ -12,10 +12,10 @@ import { authMiddleware } from "../middleware/login.middleware";
 const router = Router();
 
 router.post("/", authMiddleware, createOrder);
-router.get("/", authMiddleware, getAllOrders);
-router.get("/:id", authMiddleware, getOrderById);
+router.get("/user/", authMiddleware, getOrdersByToken);
 router.get("/user/:userId", authMiddleware, getOrdersByUserId);
-router.put("/:id/status", authMiddleware, updateOrderStatus);
+router.put("/status/:id", authMiddleware, updateOrderStatus);
+router.get("/:id", authMiddleware, getOrderById);
 router.delete("/:id", authMiddleware, deleteOrder);
 
 export default router;
