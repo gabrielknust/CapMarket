@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import User from "../models/user.model";
 import Cart from "../models/cart.model";
 import { AuthenticatedRequest } from "../middleware/login.middleware";
+import Product from "../models/product.model";
 
 export const createUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -100,6 +101,13 @@ export const deleteUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const deletedUser = await User.findByIdAndUpdate(id, { isActive: false });
+
+    if (deletedUser?.role === "Vendedor") {
+      await Product.updateMany(
+        { seller: deletedUser._id },
+        { isActive: false },
+      );
+    }
 
     if (!deletedUser) {
       return res.status(404).json({ message: "Usuário não encontrado." });
