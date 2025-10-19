@@ -4,7 +4,7 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import app from "../src/app";
 import User, { IUser } from "../src/models/user.model";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../config";
+import { JWT_SECRET } from "../src/config";
 import Product from "../src/models/product.model";
 
 let mongoServer: MongoMemoryServer;

@@ -13,7 +13,6 @@ export const createProduct = async (
   try {
     const seller = req.user?.id;
     const { name, price, description, urlImage } = req.body;
-
     const sellerExists = await User.findById(seller);
     if (!sellerExists) {
       return res
@@ -346,7 +345,12 @@ export const uploadProductsFromCSV = async (
   res: Response,
 ) => {
   const userId = req.user?.id;
-  if (req.user?.papel !== "Vendedor") {
+  const sellerExists = await User.findById(userId);
+  if (!sellerExists) {
+    return res
+      .status(400)
+      .json({ message: "Vendedor inválido ou não encontrado." });
+  } else if (sellerExists.role !== "Vendedor") {
     return res.status(403).json({
       message:
         "Acesso negado. Apenas vendedores podem fazer upload de produtos.",

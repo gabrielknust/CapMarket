@@ -5,7 +5,7 @@ import app from "../src/app";
 import User from "../src/models/user.model";
 import Product from "../src/models/product.model";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../config";
+import { JWT_SECRET } from "../src/config";
 import { IUser } from "../src/models/user.model";
 import path from "path";
 

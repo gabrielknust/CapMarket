@@ -6,8 +6,11 @@ import cartRoutes from "./routes/cart.routes";
 import orderRoutes from "./routes/order.routes";
 import favoriteRoutes from "./routes/favorite.routes";
 import morgan from "morgan";
+import cors from "cors";
 
 const app = express();
+
+app.use(cors());
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const originalJson = res.json;
