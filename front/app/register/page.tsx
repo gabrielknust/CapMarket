@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '../config';
 
 export default function RegisterPage() {
   const [nome, setNome] = useState('');
@@ -18,7 +19,7 @@ export default function RegisterPage() {
     setSuccessMessage('');
 
     try {
-      const res = await fetch('http://localhost:3000/api/users', {
+      const res = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome, email, senha, papel }),
