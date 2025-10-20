@@ -1,8 +1,9 @@
 import { ProductCard } from './/components/ProductCard';
+import { API_URL } from './config';
 
 async function getProducts() {
   try {
-    const res = await fetch('http://localhost:3000/api/products', {
+    const res = await fetch(`${API_URL}/products`, {
       cache: 'no-store',
     });
     if (!res.ok) throw new Error(`Falha ao buscar produtos: ${res.statusText}`);

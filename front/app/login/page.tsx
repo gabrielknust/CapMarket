@@ -4,12 +4,15 @@ import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '../config';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter(); 
+  const { login } = useAuth();
+
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError('')
@@ -26,7 +29,7 @@ export default function LoginPage() {
         throw new Error(data.message || 'Falha no login.');
       }
       const { token } = await res.json();
-      localStorage.setItem('token', token);
+      login(token);
       router.push('/');
 
     } catch (err: any) {

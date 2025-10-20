@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       colors: {
         'primary': '#4F46E5',
-        'text-main': '#1E1E1E',
+        'text-main': '#000000ff',
         'background': '#F5F5F5',
         'success': '#28A745',
         'error': '#DC3545',

@@ -2,13 +2,17 @@
 
 import Link from 'next/link';
 import { SearchBar } from './SearchBar';
-import { useAuth } from '../context/Auth';
+import { useAuth } from '../context/AuthContext';
+import { ShoppingCart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCart } from '../context/CartContext';
 
 export function Navbar() {
   const { user, logout } = useAuth();
+  const { cartItemCount } = useCart();
 
   const handleLogout = () => {
-    alert('Logout realizado!');
+    logout();
   };
 
   return (  
@@ -26,6 +30,24 @@ export function Navbar() {
           <div className="flex items-center gap-6 flex-shrink-0">
             {user ? (
               <>
+                {user.role === 'Cliente' && (
+                  <Link href="/cart" className="relative hover:text-gray-300 transition-colors" title="Carrinho">
+                    <ShoppingCart />
+                    {cartItemCount > 0 && (
+                      <span 
+                        className="
+                          absolute -top-1 right-2 transform -translate-y-1/2 translate-x-1/2 // <-- MUDANÇA AQUI
+                          h-5 min-w-[1.25rem] px-1 rounded-full 
+                          bg-primary text-white text-xs font-semibold 
+                          flex items-center justify-center
+                          border border-gray-800
+                        "
+                      >
+                        {cartItemCount > 99 ? '99+' : cartItemCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
                 <Link href="/profile" className="hover:text-gray-300 transition-colors">
                   Meu Perfil
                 </Link>
