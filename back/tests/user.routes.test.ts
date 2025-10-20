@@ -171,25 +171,15 @@ describe("User Routes API", () => {
         expect(response.body.name).toBe("Test User");
       });
 
-      it("should return 200 when updating a user's role successfully", async () => {
-        const user = await User.create(clientFactory());
-
-        const updates = { role: "Vendedor" };
-        const response = await request(app)
-          .patch(`/api/users/${user._id}`)
-          .send(updates)
-          .set("Authorization", `Bearer ${token}`);
-
-        expect(response.status).toBe(200);
-        expect(response.body.role).toBe("Vendedor");
-      });
-
       it("should return 200 when updating a user's password successfully", async () => {
         const user = await User.create(clientFactory());
 
-        const updates = { password: "newPass" };
+        const updates = {
+          currentPassword: "password123",
+          newPassword: "newPass",
+        };
         const response = await request(app)
-          .patch(`/api/users/${user._id}`)
+          .patch(`/api/users/password/${user._id}`)
           .send(updates)
           .set("Authorization", `Bearer ${token}`);
 

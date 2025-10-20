@@ -54,56 +54,70 @@ export const getAllProducts = async (
   try {
     const userId = req.user?.id;
 
-    let products;
+    const { search, page = 1, limit = 12 } = req.query;
+    const pageNumber = parseInt(page as string, 10);
+    const limitNumber = parseInt(limit as string, 10);
+    const skip = (pageNumber - 1) * limitNumber;
 
-    if (userId) {
-      const pipeline = [
-        { $match: { isActive: true } },
-        {
-          $lookup: {
-            from: "favorites",
-            let: { productId: "$_id" },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ["$product", "$$productId"] },
-                      { $eq: ["$user", new mongoose.Types.ObjectId(userId)] },
-                    ],
-                  },
-                },
-              },
-            ],
-            as: "userFavorite",
-          },
-        },
-        {
-          $addFields: {
-            isFavorited: { $gt: [{ $size: "$userFavorite" }, 0] },
-          },
-        },
-        {
-          $project: {
-            userFavorite: 0,
-          },
-        },
+    const matchStage: any = { isActive: true };
+    if (search && typeof search === "string") {
+      matchStage.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
       ];
-
-      products = await Product.aggregate(pipeline);
-    } else {
-      products = await Product.find({ isActive: true })
-        .populate("seller", "name email")
-        .lean();
     }
+    const results = await Product.aggregate([
+      { $match: matchStage },
+      {
+        $facet: {
+          metadata: [{ $count: "totalProducts" }],
+          data: [
+            { $skip: skip },
+            { $limit: limitNumber },
+            {
+              $lookup: {
+                from: "favorites",
+                let: { productId: "$_id" },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ["$product", "$$productId"] },
+                          {
+                            $eq: ["$user", new mongoose.Types.ObjectId(userId)],
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
+                as: "userFavorite",
+              },
+            },
+            {
+              $addFields: {
+                isFavorited: { $gt: [{ $size: "$userFavorite" }, 0] },
+              },
+            },
+            { $project: { userFavorite: 0 } },
+          ],
+        },
+      },
+    ]);
 
-    res.status(200).json(products);
+    const products = results[0].data;
+    const totalProducts = results[0].metadata[0]?.totalProducts || 0;
+    const totalPages = Math.ceil(totalProducts / limitNumber);
+
+    res.status(200).json({
+      products,
+      currentPage: pageNumber,
+      totalPages,
+      totalProducts,
+    });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
-    res
-      .status(500)
-      .json({ message: "Erro ao buscar produtos", error: message });
+    res.status(500).json({ message: "Erro ao buscar produtos" });
   }
 };
 

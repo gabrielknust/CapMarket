@@ -71,6 +71,17 @@ export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
     const { id } = req.params;
     const updates = req.body;
 
+    delete updates.password;
+    delete updates.salt;
+    delete updates.role;
+    delete updates.isActive;
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        message: "Nenhum dado válido para atualização foi fornecido.",
+      });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(id, updates, {
       new: true,
       runValidators: true,
@@ -94,6 +105,44 @@ export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
     res
       .status(500)
       .json({ message: "Erro ao atualizar usuário", error: message });
+  }
+};
+
+export const updatePassword = async (
+  req: AuthenticatedRequest,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(id).select("+password +salt");
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    if (!user.comparePassword(currentPassword)) {
+      return res.status(400).json({ message: "Senha atual incorreta." });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Senha atualizada com sucesso." });
+  } catch (error: Error | any) {
+    if (error.name === "ValidationError") {
+      const errors: Record<string, string> = {};
+      for (const field in error.errors) {
+        errors[field] = error.errors[field].message;
+      }
+      console.log(error);
+      return res.status(400).json({ message: "Erro de validação.", errors });
+    }
+    const message =
+      error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+    res
+      .status(500)
+      .json({ message: "Erro ao atualizar senha", error: message });
   }
 };
 

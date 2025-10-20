@@ -9,6 +9,7 @@ interface ImageComponentProps {
   altText: string;
   productId: string;
   isFavoritedInitially?: boolean;
+  favorite?: boolean;
 }
 
 const PLACEHOLDER_IMAGE = '/images/notFound.jpg';
@@ -17,7 +18,8 @@ export function ImageComponent({
   imageUrl, 
   altText, 
   productId, 
-  isFavoritedInitially = false 
+  isFavoritedInitially = false, 
+  favorite = true
 }: ImageComponentProps) {
   const [currentSrc, setCurrentSrc] = useState(imageUrl || PLACEHOLDER_IMAGE);
   const [isFavorited, setIsFavorited] = useState(isFavoritedInitially); 
@@ -30,7 +32,7 @@ export function ImageComponent({
     event.stopPropagation();
     event.preventDefault();
     setIsFavorited(!isFavorited);
-    // TODO: Adicionar lógica da API para favoritar/desfavoritar aqui
+    
     console.log(`Produto ${productId} ${!isFavorited ? 'favoritado' : 'desfavoritado'}!`);
   };
 
@@ -44,6 +46,7 @@ export function ImageComponent({
         priority
         onError={handleError}
       />
+      {favorite && (
       <button
         onClick={handleFavoriteClick}
         className="absolute top-3 right-3 bg-white/70 p-2 rounded-full backdrop-blur-sm transition hover:scale-110 z-10 cursor-pointer"
@@ -56,6 +59,7 @@ export function ImageComponent({
           color={isFavorited ? '#DC3545' : 'currentColor'}
         />
       </button>
+      )}
     </div>
   );
 }

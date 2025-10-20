@@ -68,7 +68,7 @@ describe("Login route tests", () => {
       });
 
       expect(response.status).toBe(403);
-      expect(response.body.message).toBe("Esta conta está desativada.");
+      expect(response.body.message).toBe("Credenciais inválidas.");
     });
     it("should return 401 for non-existent user", async () => {
       const response = await request(app).post("/api/login").send({

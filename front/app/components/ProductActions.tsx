@@ -1,16 +1,14 @@
-// src/components/ProductActions.tsx
 'use client';
 
 import { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
-import { useCart } from '../context/CartContext'; // 1. Importe o useCart
+import { useCart } from '../context/CartContext';
 
 export function ProductActions({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart(); // 2. Pegue a função do contexto
+  const { addToCart } = useCart();
 
   const handleAddToCart = () => {
-    // 3. Chame a função do contexto com os dados necessários
     addToCart(product._id, quantity);
   };
 

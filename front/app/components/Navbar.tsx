@@ -24,9 +24,6 @@ export function Navbar() {
               CapLink Store
             </Link>
           </div>
-          <div className="w-full max-w-md hidden md:block">
-            <SearchBar />
-          </div>
           <div className="flex items-center gap-6 flex-shrink-0">
             {user ? (
               <>
@@ -36,7 +33,7 @@ export function Navbar() {
                     {cartItemCount > 0 && (
                       <span 
                         className="
-                          absolute -top-1 right-2 transform -translate-y-1/2 translate-x-1/2 // <-- MUDANÇA AQUI
+                          absolute -top-1 right-2 transform -translate-y-1/2 translate-x-1/2
                           h-5 min-w-[1.25rem] px-1 rounded-full 
                           bg-primary text-white text-xs font-semibold 
                           flex items-center justify-center
@@ -63,7 +60,6 @@ export function Navbar() {
           </div>
         </div>
         <div className="mt-4 md:hidden">
-            <SearchBar />
         </div>
       </div>
     </header>

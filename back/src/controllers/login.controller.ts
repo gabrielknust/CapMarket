@@ -20,7 +20,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: "Esta conta está desativada." });
+      return res.status(403).json({ message: "Credenciais inválidas." });
     }
 
     const isPasswordValid = user.comparePassword(password);

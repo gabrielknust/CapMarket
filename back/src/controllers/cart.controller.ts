@@ -45,8 +45,8 @@ export const addProductToCart = async (
       return res.status(400).json({ message: "Produto não encontrado." });
     }
 
-    const productInCart = cart.items.find(
-      (item) => item.product!.toString() === productId,
+    const productInCart = cart.items.find((item) =>
+      item.product?.equals(productId),
     );
     if (productInCart) {
       productInCart.quantity += quantity;

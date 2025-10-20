@@ -4,6 +4,7 @@ import './globals.css';
 import { Navbar } from './components/Navbar';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { FavoriteProvider } from './context/FavoriteContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,8 +23,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <CartProvider>
+            <FavoriteProvider>
             <Navbar />
             <main>{children}</main>
+            </FavoriteProvider>
           </CartProvider>
         </AuthProvider>
       </body>

@@ -10,15 +10,17 @@ interface CartContextType {
   cartItemCount: number;
   isLoading: boolean;
   addToCart: (productId: string, quantity: number) => Promise<void>;
+  updateItemQuantity: (productId: string, quantity: number) => Promise<void>;
+  removeItemFromCart: (productId: string) => Promise<void>; 
 }
 
 interface ICartItem {
-  produto: { _id: string; nome: string };
-  quantidade: number;
+  product: { _id: string; nome: string };
+  quantity: number;
 }
 interface ICart {
   _id: string;
-  usuario: string;
+  customer: string;
   items: ICartItem[];
 }
 
@@ -39,7 +41,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
             'Authorization': `Bearer ${token}`,
           },
         });
-
         if (res.ok) {
           const data = await res.json();
           setCart(data);
@@ -104,10 +105,46 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateItemQuantity = async (productId: string, quantity: number) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/cart/items/${productId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ quantity }),
+      });
+      if (!res.ok) throw new Error('Falha ao atualizar quantidade');
+      const updatedCart = await res.json();
+      setCart(updatedCart);
+    } catch (error) {
+      console.error(error);
+      alert('Não foi possível atualizar o item.');
+    }
+  };
+
+  const removeItemFromCart = async (productId: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/cart/${productId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Falha ao remover item');
+      const updatedCart = await res.json();
+      setCart(updatedCart);
+    } catch (error) {
+      console.error(error);
+      alert('Não foi possível remover o item.');
+    }
+  };
+
   const cartItemCount = cart?.items?.length || 0;
 
   return (
-    <CartContext.Provider value={{ cart, cartItemCount, isLoading, addToCart }}>
+    <CartContext.Provider value={{ cart, cartItemCount, isLoading, addToCart, updateItemQuantity, removeItemFromCart }}>
       {children}
     </CartContext.Provider>
   );

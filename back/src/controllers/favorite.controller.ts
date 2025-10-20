@@ -10,7 +10,7 @@ export const addFavorite = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const productExists = await Product.findOne({
       _id: productId,
-      isAtivo: true,
+      isActive: true,
     });
     if (!productExists) {
       return res.status(404).json({ message: "Produto não encontrado." });

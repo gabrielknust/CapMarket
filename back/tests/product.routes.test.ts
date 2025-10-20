@@ -181,7 +181,6 @@ describe("Product Routes API", () => {
         .post("/api/products/upload")
         .set("Authorization", `Bearer ${token}`)
         .attach("products-csv", csvFilePath);
-      console.log(response.body);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty(
@@ -228,7 +227,7 @@ describe("Product Routes API", () => {
   });
 
   describe("GET /api/products", () => {
-    it("should return 200 and an array of products", async () => {
+    it("should return 200 and a paginated object of products", async () => {
       const user = await User.create(sellerFactory());
       await Product.create(productFactory({ seller: user._id }));
       await Product.create(
@@ -240,10 +239,19 @@ describe("Product Routes API", () => {
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBe(2);
-      expect(response.body[0]).toHaveProperty("name", "Test Product");
-      expect(response.body[1]).toHaveProperty("name", "Test Product 2");
+
+      expect(response.body).toBeInstanceOf(Object);
+      expect(response.body).toHaveProperty("products");
+
+      const { products } = response.body;
+      expect(Array.isArray(products)).toBe(true);
+      expect(products.length).toBe(2);
+
+      expect(products[0]).toHaveProperty("name", "Test Product");
+      expect(products[1]).toHaveProperty("name", "Test Product 2");
+      expect(response.body).toHaveProperty("currentPage", 1);
+      expect(response.body).toHaveProperty("totalPages", 1);
+      expect(response.body).toHaveProperty("totalProducts", 2);
     });
   });
 
@@ -307,7 +315,6 @@ describe("Product Routes API", () => {
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBe(2);
-      console.log(response.body);
       response.body.forEach((product: any) => {
         expect(product).toHaveProperty("sellerInfo");
         expect(product.sellerInfo).toHaveProperty("name");

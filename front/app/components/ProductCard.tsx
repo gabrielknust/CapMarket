@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import { Heart } from 'lucide-react';
 import { useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { ImageComponent } from './ImageComponent';
+import { useFavorites } from '../context/FavoriteContext';
 
 interface Product {
   _id: string;
@@ -21,13 +21,20 @@ interface ProductCardProps {
 const NO_IMAGE_URL = '/images/notFound.jpg';
 
 export function ProductCard({ product }: ProductCardProps) {
-  const [isFavorited, setIsFavorited] = useState(product.isFavorited || false);
+  const { addFavorite,removeFavorite,isFavorited } = useFavorites();
   const [imageUrl, setImageUrl] = useState(product.urlImage || NO_IMAGE_URL);
 
+  const isProductFavorited = isFavorited(product._id);
+
   const handleFavoriteClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation(); 
+    event.stopPropagation();
     event.preventDefault();
-    setIsFavorited(!isFavorited);
+    
+    if (isProductFavorited) {
+      removeFavorite(product._id);
+    } else {
+      addFavorite(product._id);
+    }
   };
 
   const handleImageError = () => {
@@ -49,8 +56,8 @@ export function ProductCard({ product }: ProductCardProps) {
             <Heart
               size={20}
               className="text-gray-700"
-              fill={isFavorited ? '#DC3545' : 'none'}
-              color={isFavorited ? '#DC3545' : 'currentColor'}
+              fill={isProductFavorited ? '#DC3545' : 'none'}
+              color={isProductFavorited ? '#DC3545' : 'currentColor'}
             />
           </button>
         </div>

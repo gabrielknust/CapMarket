@@ -53,7 +53,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
       customer: userId,
       products: orderProducts,
       totalOrder,
-      status: "Pendente",
+      status: "Entregue",
       address: shippingAddress,
     });
 
