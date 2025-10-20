@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ProductCard } from './components/ProductCard';
-import { SearchBar } from './components/SearchBar';
+import { ProductCard } from '@/app/components/ProductCard';
+import { SearchBar } from '@/app/components/SearchBar';
 import { LoaderCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import {API_URL} from './config';
+import {API_URL} from '@/app/config';
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);

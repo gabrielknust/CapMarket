@@ -1,11 +1,11 @@
 'use client';
 
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '@/app/context/AuthContext';
+import { useCart } from '@/app/context/CartContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Trash2, LoaderCircle } from 'lucide-react';
-import { ImageComponent } from '../components/ImageComponent';
+import { Trash2 } from 'lucide-react';
+import { ImageComponent } from '@/app/components/ImageComponent';
 import { useEffect, useState } from 'react';
 
 export default function CartPage() {

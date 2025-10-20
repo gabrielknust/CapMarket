@@ -1,12 +1,12 @@
 'use client';
 
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '@/app/context/AuthContext';
+import { useCart } from '@/app/context/CartContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, FormEvent } from 'react';
 import { LoaderCircle } from 'lucide-react';
-import { ImageComponent } from '../components/ImageComponent';
-import { API_URL } from '../config';
+import { ImageComponent } from '@/app/components/ImageComponent';
+import { API_URL } from '@/app/config';
 
 export default function CheckoutPage() {
   const { user, token, isLoading: isAuthLoading } = useAuth();

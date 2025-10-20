@@ -2,8 +2,8 @@
 
 import { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from './AuthContext';
-import { API_URL } from '../config';
+import { useAuth } from '@/app/context/AuthContext';
+import { API_URL } from '@/app/config';
 
 interface FavoriteApiResponse {
   _id: string;

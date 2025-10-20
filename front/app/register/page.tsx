@@ -3,7 +3,7 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '../config';
+import { API_URL } from '@/app/config';
 
 export default function RegisterPage() {
   const [nome, setNome] = useState('');

@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { SearchBar } from './SearchBar';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/app/context/AuthContext';
 import { ShoppingCart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCart } from '../context/CartContext';
+import { useCart } from '@/app/context/CartContext';
 
 export function Navbar() {
   const { user, logout } = useAuth();

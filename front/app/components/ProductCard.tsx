@@ -4,7 +4,7 @@ import { Heart } from 'lucide-react';
 import { useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { ImageComponent } from './ImageComponent';
-import { useFavorites } from '../context/FavoriteContext';
+import { useFavorites } from '@/app/context/FavoriteContext';
 
 interface Product {
   _id: string;

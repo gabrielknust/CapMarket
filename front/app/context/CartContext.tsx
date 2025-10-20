@@ -1,8 +1,8 @@
 'use client';
 
 import { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
-import { useAuth } from './AuthContext'; 
-import { API_URL } from '../config';
+import { useAuth } from '@/app/context/AuthContext'; 
+import { API_URL } from '@/app/config';
 import { useRouter } from 'next/navigation';
 
 interface CartContextType {

@@ -1,11 +1,11 @@
 'use client';
 
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { LoaderCircle, User, Package, UploadCloud, Mail, KeyRound, Trash2, History,List,PlusCircle } from 'lucide-react';
-import { API_URL } from '../config';
+import { API_URL } from '@/app/config';
 
 
 interface UserProfile {

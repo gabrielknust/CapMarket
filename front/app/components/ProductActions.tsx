@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { useCart } from '@/app/context/CartContext';
 
 export function ProductActions({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);

@@ -3,8 +3,8 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '../config';
-import { useAuth } from '../context/AuthContext';
+import { API_URL } from '@/app/config';
+import { useAuth } from '@/app/context/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

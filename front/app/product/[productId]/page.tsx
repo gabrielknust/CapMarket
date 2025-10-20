@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
-import { ProductActions } from '../../components/ProductActions'; 
-import { ImageComponent } from '../../components/ImageComponent';
+import { ProductActions } from '@/app/components/ProductActions'; 
+import { ImageComponent } from '@/app/components/ImageComponent';
 import { API_URL } from '@/app/config';
 
 interface ProductDetailPageProps {

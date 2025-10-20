@@ -1,10 +1,9 @@
 'use client';
 
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { LoaderCircle } from 'lucide-react';
 import { API_URL } from '@/app/config';
 import { ImageComponent } from '@/app/components/ImageComponent';

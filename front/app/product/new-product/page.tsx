@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent, type ChangeEvent } from 'react';
 import { LoaderCircle, PackagePlus, UploadCloud } from 'lucide-react';
