@@ -39,7 +39,6 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       setIsProfileLoading(true);
       try {
-        console.log('Buscando dados do perfil com token:', token);
         const res = await fetch(`${API_URL}/users/${user?.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -132,7 +131,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen py-12">
+    <div className="bg-[#a19a9a] min-h-screen py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-4 mb-8">

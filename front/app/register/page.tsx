@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 import { API_URL } from '@/app/config';
 
 export default function RegisterPage() {
-  const [nome, setNome] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [papel, setPapel] = useState('Cliente');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('Cliente');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function RegisterPage() {
       const res = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, senha, papel }),
+        body: JSON.stringify({ name, email, password, role }),
       });
 
       const data = await res.json();
@@ -53,17 +53,17 @@ export default function RegisterPage() {
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
-            <label htmlFor="nome" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
               Nome
             </label>
             <input
-              id="nome"
+              id="name"
               type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              className={`w-full px-3 py-2 mt-1 text-gray-900 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary ${errors.nome ? 'border-error' : 'border-gray-300'}`}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={`w-full px-3 py-2 mt-1 text-gray-900 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary ${errors.name ? 'border-error' : 'border-gray-300'}`}
             />
-            {errors.nome && <p className="mt-1 text-sm text-error">{errors.nome}</p>}
+            {errors.name && <p className="mt-1 text-sm text-error">{errors.name}</p>}
           </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -79,28 +79,28 @@ export default function RegisterPage() {
             {errors.email && <p className="mt-1 text-sm text-error">{errors.email}</p>}
           </div>
           <div>
-            <label htmlFor="senha" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Senha
             </label>
             <input
-              id="senha"
+              id="password"
               type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className={`w-full px-3 py-2 mt-1 text-gray-900 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary ${errors.senha ? 'border-error' : 'border-gray-300'}`}
             />
-            {errors.senha && <p className="mt-1 text-sm text-error">{errors.senha}</p>}
+            {errors.password && <p className="mt-1 text-sm text-error">{errors.password}</p>}
           </div>
           <fieldset>
             <div className="flex items-center gap-x-6">
               <div className="flex items-center gap-x-2">
                 <input
                   id="cliente"
-                  name="papel"
+                  name="role"
                   type="radio"
                   value="Cliente"
-                  checked={papel === 'Cliente'}
-                  onChange={(e) => setPapel(e.target.value)}
+                  checked={role === 'Cliente'}
+                  onChange={(e) => setRole(e.target.value)}
                   className="h-4 w-4 border-gray-400 text-primary focus:ring-primary"
                 />
                 <label htmlFor="cliente" className="block text-sm font-medium text-gray-700">
@@ -110,11 +110,11 @@ export default function RegisterPage() {
               <div className="flex items-center gap-x-2">
                 <input
                   id="vendedor"
-                  name="papel"
+                  name="role"
                   type="radio"
                   value="Vendedor"
-                  checked={papel === 'Vendedor'}
-                  onChange={(e) => setPapel(e.target.value)}
+                  checked={role === 'Vendedor'}
+                  onChange={(e) => setRole(e.target.value)}
                   className="h-4 w-4 border-gray-400 text-primary focus:ring-primary"
                 />
                 <label htmlFor="vendedor" className="block text-sm font-medium text-gray-700">

@@ -135,7 +135,6 @@ export const updatePassword = async (
       for (const field in error.errors) {
         errors[field] = error.errors[field].message;
       }
-      console.log(error);
       return res.status(400).json({ message: "Erro de validação.", errors });
     }
     const message =

@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./back
+    container_name: caplink-backend
+    restart: unless-stopped
+    environment:
+      MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+      PORT: 3126
+    networks:
+      - caplink-net
+  mongo:
+    image: mongo:6
+    container_name: caplink-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - caplink-net
+
+  frontend:
+    build: ./front
+    container_name: caplink-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: /api 
+    depends_on:
+      - backend
+    networks:
+      - caplink-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: caplink-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - caplink-net
+
+networks:
+  caplink-net:
+    driver: bridge
+
+volumes:
+  mongo_data:

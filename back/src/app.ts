@@ -5,6 +5,7 @@ import loginRoutes from "./routes/login.routes";
 import cartRoutes from "./routes/cart.routes";
 import orderRoutes from "./routes/order.routes";
 import favoriteRoutes from "./routes/favorite.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
 import morgan from "morgan";
 import cors from "cors";
 
@@ -25,11 +26,12 @@ app.use(morgan("dev"));
 
 app.use(express.json());
 
-app.use("/api/users", userRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/login", loginRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/order", orderRoutes);
-app.use("/api/favorites", favoriteRoutes);
+app.use("/users", userRoutes);
+app.use("/products", productRoutes);
+app.use("/login", loginRoutes);
+app.use("/cart", cartRoutes);
+app.use("/order", orderRoutes);
+app.use("/favorites", favoriteRoutes);
+app.use("/dashboard", dashboardRoutes);
 
 export default app;

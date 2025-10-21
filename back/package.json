@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.ts",
+    "start": "node dist/src/index.js",
     "dev": "tsx watch src/index.ts",
     "test": "jest",
     "seed": "tsx scripts/seed.ts"

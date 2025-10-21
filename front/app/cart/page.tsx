@@ -57,7 +57,7 @@ export default function CartPage() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen py-8">
+    <div className="bg-[#a19a9a] min-h-screen py-8">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">Meu Carrinho</h1>
         <div className="flex flex-col md:flex-row gap-8">

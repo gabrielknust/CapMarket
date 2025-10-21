@@ -30,7 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const decoded = jwtDecode<UserPayload>(storedToken);
         if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-          console.log('Token expirado encontrado, limpando sessão.');
           localStorage.removeItem('token');
           setUser(null);
           setToken(null);

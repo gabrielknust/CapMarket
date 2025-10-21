@@ -25,7 +25,6 @@ export default function PurchaseHistoryPage() {
 
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  console.log('User in PurchaseHistoryPage:', user);
 
   useEffect(() => {
     if (isAuthLoading) {
@@ -94,7 +93,7 @@ export default function PurchaseHistoryPage() {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen py-8">
+    <div className="bg-[#a19a9a] min-h-screen py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-8">Minhas Compras</h1>

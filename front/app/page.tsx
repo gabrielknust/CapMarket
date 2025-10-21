@@ -18,13 +18,7 @@ export default function HomePage() {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        const url = new URL(`${API_URL}/products`);
-        url.searchParams.append('page', currentPage.toString());
-        if (searchTerm) {
-          url.searchParams.append('search', searchTerm);
-        }
-        
-        const res = await fetch(url.toString());
+        const res = await fetch(`${API_URL}/products?page=${currentPage}&search=${searchTerm}`);
         if (!res.ok) throw new Error('Falha ao buscar produtos');
         
         const data = await res.json();
@@ -53,7 +47,7 @@ export default function HomePage() {
         <SearchBar onSearch={handleSearch} />
       </div>
 
-      <main className="bg-gray-100 min-h-screen rounded-t-2xl p-4 md:p-8">
+      <main className="bg-[#a19a9a] min-h-screen rounded-t-2xl p-4 md:p-8">
         <div className="container mx-auto">
           {isLoading ? (
             <div className="flex justify-center items-center py-20">

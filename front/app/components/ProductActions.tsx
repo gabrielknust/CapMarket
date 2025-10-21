@@ -24,7 +24,7 @@ export function ProductActions({ product }: { product: any }) {
           min="1"
           value={quantity}
           onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-          className="w-20 p-2 border border-gray-300 rounded-md text-center text-gray-700"
+          className="w-20 p-2 border border-black rounded-md text-center text-gray-700"
         />
       </div>
 

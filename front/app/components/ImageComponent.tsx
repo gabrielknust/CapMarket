@@ -3,6 +3,7 @@
 import { useState, type MouseEvent } from 'react';
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
+import { useFavorites } from '@/app/context/FavoriteContext';
 
 interface ImageComponentProps {
   imageUrl?: string;
@@ -21,19 +22,24 @@ export function ImageComponent({
   isFavoritedInitially = false, 
   favorite = true
 }: ImageComponentProps) {
-  const [currentSrc, setCurrentSrc] = useState(imageUrl || PLACEHOLDER_IMAGE);
-  const [isFavorited, setIsFavorited] = useState(isFavoritedInitially); 
+  const { addFavorite,removeFavorite,isFavorited } = useFavorites();
+  const [currentSrc, setCurrentSrc] = useState(imageUrl || PLACEHOLDER_IMAGE); 
 
   const handleError = () => {
     setCurrentSrc(PLACEHOLDER_IMAGE);
   };
 
+  const isProductFavorited = isFavorited(productId);
+
   const handleFavoriteClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
-    setIsFavorited(!isFavorited);
     
-    console.log(`Produto ${productId} ${!isFavorited ? 'favoritado' : 'desfavoritado'}!`);
+    if (isProductFavorited) {
+      removeFavorite(productId);
+    } else {
+      addFavorite(productId);
+    }
   };
 
   return (
@@ -55,8 +61,8 @@ export function ImageComponent({
         <Heart
           size={20}
           className="text-gray-700"
-          fill={isFavorited ? '#DC3545' : 'none'}
-          color={isFavorited ? '#DC3545' : 'currentColor'}
+          fill={isProductFavorited ? '#DC3545' : 'none'}
+          color={isProductFavorited ? '#DC3545' : 'currentColor'}
         />
       </button>
       )}

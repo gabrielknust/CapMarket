@@ -37,12 +37,6 @@ export function ProductCard({ product }: ProductCardProps) {
     }
   };
 
-  const handleImageError = () => {
-    if (imageUrl !== NO_IMAGE_URL) {
-      setImageUrl(NO_IMAGE_URL);
-    }
-  };
-
   return (
     <Link href={`/product/${product._id}`} className="block">
       <div className="bg-white rounded-lg shadow-sm overflow-hidden group transition-shadow hover:shadow-xl cursor-pointer">

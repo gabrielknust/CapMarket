@@ -110,7 +110,6 @@ export default function SellerDashboardPage() {
           />
         </div>
         
-        {/* Adicione outros componentes aqui, como gráficos ou uma lista dos últimos pedidos */}
         <div className="mt-8">
           <Link href="/profile/my-products" className="font-semibold text-primary hover:underline">
             Ver todos os meus produtos →

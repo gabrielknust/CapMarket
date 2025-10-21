@@ -99,7 +99,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen py-12">
+    <div className="bg-[#a19a9a] min-h-screen py-12">
       <div className="container mx-auto px-4 max-w-2xl">
         <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md space-y-6">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3"><Edit /> Editar Produto</h1>

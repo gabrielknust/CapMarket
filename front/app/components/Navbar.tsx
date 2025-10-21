@@ -1,11 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { SearchBar } from './SearchBar';
 import { useAuth } from '@/app/context/AuthContext';
 import { ShoppingCart } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useCart } from '@/app/context/CartContext';
+import { useState } from 'react';
 
 export function Navbar() {
   const { user, logout } = useAuth();
