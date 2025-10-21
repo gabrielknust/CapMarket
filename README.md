@@ -1,10 +1,10 @@
 # CapMarket
 
-Esse projeto consiste em uma simulação de uma loja virtual simples, desenvolvida com Next.js e Node.js. O projeto tem duas partes principais:
+CapMarket é uma simulação de loja virtual simples, desenvolvida com Next.js no frontend e Node.js no backend. O projeto possui integração com MongoDB e utiliza Docker para facilitar a execução do ambiente completo.
 
 ## Back
 
-Desenvolvido utilizando Node.js e Express, é responsável pela lógica e pelas regras de negócio do projeto. Além disso, foi implementado um banco de dados NoSQL utilizando MongoDB para a persistência dos dados. Todos os modelos utilizados no banco estão na pasta back/src/models. Os demais arquivos estão organizados em suas respectivas pastas, sendo src/controllers para os controladores, ou seja, arquivos que contem as funções que se comunicam com o MongoDB e garantem as regras de negócio, routes, onde as rotas da API Express são configuradas, config, aonde as variáveis de ambiente são configuradas e exportadas, e middleware, onde foi criado o middleware responsável pela autenticação utilizando tokens JWT. Também foram feitos testes unitários para todas as rotas e funções utilizando Jest e Supertest.
+Desenvolvido utilizando Node.js e Express, é responsável pela lógica e pelas regras de negócio do projeto. Todos os modelos utilizados no banco estão na pasta back/src/models. Os demais arquivos estão organizados em suas respectivas pastas, sendo src/controllers para os controladores, ou seja, arquivos que contem as funções que se comunicam com o MongoDB e garantem as regras de negócio, routes, onde as rotas da API Express são configuradas, config, aonde as variáveis de ambiente são configuradas e exportadas, e middleware, onde foi criado o middleware responsável pela autenticação utilizando tokens JWT. Também foram feitos testes unitários para todas as rotas e funções utilizando Jest e Supertest.
 
 ## Front
 
@@ -22,9 +22,7 @@ Desenvolvido em Next.js, juntamente com o framework Tailwind, ele consome a API 
 
 ## Pré-requisitos
 
-Node.js v18+ e npm
-
-MongoDB instalado e rodando localmente (ou uma instância na nuvem)
+Docker e Docker Compose
 
 ## Criação das variáveis de ambiente
 
@@ -43,51 +41,22 @@ Frontend (/front/.env):
 ```
   API_URL=http://localhost:3126/api
 ```
-
-## Instalação
-
-Execute os seguintes comandos em dois terminais:
-
-Terminal 1:
-
+Geral (pasta raiz)
 ```
-cd back
-npm install
+MONGO_URI="mongodb://host.docker.internal:27017/caplink_db"
+JWT_SECRET="Segredo Super Secreto"
 ```
 
-Terminal 2:
+## Executar os containers
+
+Primeiro certifique-se que as portas 80, 3000 e 3126 estejam livres no seu sistema.
+
+Navegue para a pasta raiz do projeto e execute o comando:
 
 ```
-cd front
-npm install
+docker compose up --build -d
 ```
 
-## Execução da API (Backend)
+Aguarde todos os containers serem montados e executados. 
 
-Na pasta back/:
-
-```
-npm run dev
-```
-
-Aguarde até a inicialização ser concluída.
-
-## Populando o Banco de Dados
-
-Em outro terminal, ainda com a API rodando, execute:
-
-```
-npm run seed
-```
-
-Aguarde até a conclusão do comando.
-
-## Execução do Frontend
-
-Em outro terminal, agora na pasta front/:
-
-```
-npm run dev
-```
-
-Isso irá executar o frontend, geralmente na porta 3000. Acesse http://localhost:3000 no seu navegador.
+Acesse http://localhost no seu navegador.
